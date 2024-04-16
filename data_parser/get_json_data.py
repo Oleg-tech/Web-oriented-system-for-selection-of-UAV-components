@@ -3,7 +3,7 @@ import glob
 import json
 
 
-JSON_FOLDER_PATH = './component_source_data'
+JSON_FOLDER_PATH = 'component_source_data'
 
 
 def find_json_files_list():

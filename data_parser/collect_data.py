@@ -1,7 +1,7 @@
 import csv
 
 
-path_to_file = './products_data.csv'
+path_to_file = 'products_data.csv'
 
 
 def put_into_csv(shop_name, names, prices, img_urls, product_urls):
