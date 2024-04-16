@@ -1,9 +1,9 @@
 from django.urls import include, path
 
-from .views import index
+from .views import index, FindComponentView
 
 
 urlpatterns = [
     path('', index),
-    path('api/', include('rest_framework.urls')),
+    path('api/search/', FindComponentView.as_view(), name='components-search'),
 ]
