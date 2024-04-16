@@ -1,7 +1,7 @@
 .env
-component_source_data/*
-!component_source_data/component_source_data_example.json
-products_data.csv
+data_parser/component_source_data/*
+!data_parser/component_source_data/component_source_data_example.json
+data_parser/products_data.csv
 venv
 .idea
 
