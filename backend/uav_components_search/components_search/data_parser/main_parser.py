@@ -1,8 +1,10 @@
-from get_json_data import find_json_files_list, parse_json
-from get_next_page import get_next_page
-from tag_parsers import get_parsed_object, parse_tag, parse_tag_element
-from get_soup import get_soup_playwright, get_soup_requests
-from collect_data import put_into_csv
+import json
+
+from .get_json_data import find_json_files_list, parse_json
+from .tag_parsers import get_parsed_object, parse_tag, parse_tag_element
+from .get_soup import get_soup_playwright, get_soup_requests
+from .collect_data import put_into_csv
+from ..services import get_redis_connection
 
 
 # "shop name" : {
@@ -62,7 +64,7 @@ def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_ob
 
         required_objects = [name_object, price_object, picture_object, url_object]
         if not all(required_objects):
-            print(f"Name = {name_object}\tPrice = {price_object}\tPicture = {picture_object}\tURL = {url_object}")
+            # print(f"Name = {name_object}\tPrice = {price_object}\tPicture = {picture_object}\tURL = {url_object}")
             continue
 
         name = get_parsed_object(
@@ -104,40 +106,32 @@ def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_ob
             pictures.append(picture)
             urls.append(url)
 
-    # print("Names = ", len(name_objects))
-    # print("Prices = ", len(price_objects))
-    # print("Pictures = ", len(picture_objects))
-    # print("Urls = ", len(url_objects))
+    # print("----------------------------------")
+    # print(f'Names ({len(names)}):\n {names}')
+    # print(f'Prices ({len(prices)}):\n', prices, end="\n")
+    # print(f'Pictures ({len(pictures)}):\n', pictures, end="\n")
+    # print(f'Urls ({len(urls)}):\n', urls, end="\n")
+    # print("----------------------------------")
 
-    # print(name_objects)
-    # print(price_objects)
-    # print(picture_objects)
-    # print(url_objects)
+    shop_component_list = []
+    for name, price, img, url in zip(names, prices, pictures, urls):
+        shop_component_list.append([name, price, img, url])
 
-    print("----------------------------------")
-    print(f'Names ({len(names)}):\n {names}')
-    print(f'Prices ({len(prices)}):\n', prices, end="\n")
-    print(f'Pictures ({len(pictures)}):\n', pictures, end="\n")
-    print(f'Urls ({len(urls)}):\n', urls, end="\n")
-    print("----------------------------------")
+    all_products[shop_name] = shop_component_list
 
     put_into_csv(shop_name, names, prices, pictures, urls)
+
+    return shop_component_list
 
 
 def get_next_page_from_button(soup, next_page_obj):
     name = next_page_obj["attribute_name"]
     attrs = next_page_obj["attrs"]
 
-    # print(soup)
-
     next_page_object = soup.find(
         name=name,
         attrs=attrs
     )
-
-    # print("next_page_object = ", next_page_object)
-    # print("name = ", name)
-    # print("attrs = ", attrs)
 
     if not next_page_object:
         return
@@ -147,9 +141,9 @@ def get_next_page_from_button(soup, next_page_obj):
     add_to_url = next_page_obj["add_to_url"]
 
     next_page_object = parse_tag(tag_object=next_page_object, path_to_data=path_to_data)
-    print("obj = ", next_page_object)
+    # print("obj = ", next_page_object)
     next_page = parse_tag_element(tag_object=next_page_object, data_source=data_source)
-    print("next_page = ", next_page)
+    # print("next_page = ", next_page)
 
     if add_to_url:
         return add_to_url + next_page
@@ -161,13 +155,21 @@ def get_next_page_add_to_url(url, add_to_url):
     ...
 
 
-all_products = []
+all_products = {}
 
 
-def main_parser(query):
+def main_parser(user_ip, query):
+    all_products.clear()
     json_files_list = find_json_files_list()
 
-    # print(json_files_list)
+    # Get Redis connection
+    redis_client = get_redis_connection()
+
+    # Save user request for 1 minute to reduce server load
+    redis_key = user_ip
+    redis_client.set(redis_key, 1, ex=60 * 1)
+
+    print("JSON files list = ", json_files_list)
 
     for source in json_files_list:
         source_data = parse_json(source_file_path=source)
@@ -192,7 +194,6 @@ def main_parser(query):
         urls = source_data.get("url_obj")
 
         pagination_type = source_data.get("pagination_type")
-        # next_page_parameter = source_data["next_page_url_parameter"]
 
         url = get_page_url(
             search_url=main_url,
@@ -201,23 +202,16 @@ def main_parser(query):
         )
 
         print(source_name)
-        print(url)
 
         page_counter = 1
 
         while True:
             if headers:
-                print("requests")
                 soup = get_soup_requests(url, headers)
             else:
-                print("playwright")
                 soup = get_soup_playwright(url, selector_to_wait, scroll_down)
 
-            # print(soup)
-
             gallery_soup = soup.find(name=gallery_obj["attribute_name"], attrs=gallery_obj["attrs"])
-
-            # print(gallery_soup)
 
             # Перевірка наявності хоча б одного товару за пошуком
             if not gallery_soup:
@@ -232,11 +226,8 @@ def main_parser(query):
                 print("За пошуком товарів не знайдено")
                 break
 
-            # print(f"Product objects ({len(product_objects)})")
-            print(f"Product objects ({len(product_objects)}):\n{product_objects}")
-
             # Отримати товари з поточної сторінки
-            get_product_data(
+            page_components = get_product_data(
                 product_objects=product_objects,
                 shop_name=shop_name,
                 name_obj=names,
@@ -248,8 +239,12 @@ def main_parser(query):
             # Отримати посилання на наступну сторінку
             url = None
             page_counter += 1
+            if page_counter > 5:
+                print('Забагато сторінок')
+                break
+
             if pagination_type == 'next_page':
-                next_page_obj = source_data["next_page"]
+                next_page_obj = source_data['next_page']
                 url = get_next_page_from_button(
                     soup=soup,
                     next_page_obj=next_page_obj
@@ -262,16 +257,14 @@ def main_parser(query):
                     query_separator=query_separator
                 )
                 url = f"{url}{next_page_obj}{page_counter}"
-            print("Next page = ", url)
-            # url = get_next_page(
-            #     search_url=main_url,
-            #     query=query,
-            #     next_page_parameter=next_page_parameter,
-            #     page_counter=page_counter
-            # )
 
             if not url:
                 print("Нову сторінку не знайдено")
                 break
 
-        # print(all_products)
+    # Key will be stored for 10 minutes
+    redis_key = f"{query}"
+    redis_value = json.dumps(all_products)
+    redis_client.set(redis_key, redis_value, ex=60*20)
+
+    return all_products
