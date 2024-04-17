@@ -1,7 +1,10 @@
+import json
+
 from .get_json_data import find_json_files_list, parse_json
 from .tag_parsers import get_parsed_object, parse_tag, parse_tag_element
 from .get_soup import get_soup_playwright, get_soup_requests
 from .collect_data import put_into_csv
+from ..services import get_redis_connection
 
 
 # "shop name" : {
@@ -118,6 +121,8 @@ def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_ob
 
     put_into_csv(shop_name, names, prices, pictures, urls)
 
+    return shop_component_list
+
 
 def get_next_page_from_button(soup, next_page_obj):
     name = next_page_obj["attribute_name"]
@@ -153,9 +158,16 @@ def get_next_page_add_to_url(url, add_to_url):
 all_products = {}
 
 
-def main_parser(query):
+def main_parser(user_ip, query):
     all_products.clear()
     json_files_list = find_json_files_list()
+
+    # Get Redis connection
+    redis_client = get_redis_connection()
+
+    # Save user request for 1 minute to reduce server load
+    redis_key = user_ip
+    redis_client.set(redis_key, 1, ex=60 * 1)
 
     print("JSON files list = ", json_files_list)
 
@@ -215,7 +227,7 @@ def main_parser(query):
                 break
 
             # Отримати товари з поточної сторінки
-            get_product_data(
+            page_components = get_product_data(
                 product_objects=product_objects,
                 shop_name=shop_name,
                 name_obj=names,
@@ -249,5 +261,10 @@ def main_parser(query):
             if not url:
                 print("Нову сторінку не знайдено")
                 break
+
+    # Key will be stored for 10 minutes
+    redis_key = f"{query}"
+    redis_value = json.dumps(all_products)
+    redis_client.set(redis_key, redis_value, ex=60*20)
 
     return all_products
