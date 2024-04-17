@@ -30,7 +30,7 @@ class FindComponentView(APIView):
         user_recent_request = redis_client.get(user_ip)
         if user_recent_request:
             return Response({
-                'detail': 'Too many requests. Wait few minutes.'
+                'detail': 'Too many requests. Wait a minute.'
             })
 
         # Перевірка наявності такого запиту протягом останніх 10 хвилин
