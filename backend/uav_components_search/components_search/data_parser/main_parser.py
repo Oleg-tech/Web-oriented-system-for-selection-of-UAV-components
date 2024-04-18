@@ -7,6 +7,8 @@ from .collect_data import put_into_csv
 from ..services import get_redis_connection
 
 
+all_products = []
+
 # "shop name" : {
 #   search_url,
 #   base_url,
@@ -40,6 +42,7 @@ def scrape_objects(soup, objects_pass_data):
 
 def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_obj, url_obj):
     names, prices, pictures, urls = [], [], [], []
+    global all_products
 
     for product_obj in product_objects:
         name_object = product_obj.find(
@@ -115,9 +118,16 @@ def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_ob
 
     shop_component_list = []
     for name, price, img, url in zip(names, prices, pictures, urls):
-        shop_component_list.append([name, price, img, url])
+        # shop_component_list.append([name, price, img, url])
+        all_products.append({
+            "componentName": name,
+            "componentPrice": price,
+            "componentImageURL": img,
+            "componentExternalURL": url,
+            "componentShopName": shop_name
+        })
 
-    all_products[shop_name] = shop_component_list
+    # all_products[shop_name] = shop_component_list
 
     put_into_csv(shop_name, names, prices, pictures, urls)
 
@@ -153,9 +163,6 @@ def get_next_page_from_button(soup, next_page_obj):
 
 def get_next_page_add_to_url(url, add_to_url):
     ...
-
-
-all_products = {}
 
 
 def main_parser(user_ip, query):

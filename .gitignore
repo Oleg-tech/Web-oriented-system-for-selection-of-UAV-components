@@ -1,7 +1,9 @@
 .env
-data_parser/component_source_data/*
-!data_parser/component_source_data/component_source_data_example.json
-data_parser/products_data.csv
+
+backend/uav_components_search/components_search/data_parser/component_source_data/*
+!backend/uav_components_search/components_search/data_parser/component_source_data/component_source_data_example.json
+backend/uav_components_search/components_search/data_parser/products_data.csv
+
 venv
 .idea
 

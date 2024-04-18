@@ -26,19 +26,19 @@ class FindComponentView(APIView):
         user_ip = get_user_ip(request)
         redis_client = get_redis_connection()
 
-        # Перевірка користувача на велику кількість запитів
-        user_recent_request = redis_client.get(user_ip)
-        if user_recent_request:
-            return Response({
-                'detail': 'Too many requests. Wait a minute.'
-            })
-
         # Перевірка наявності такого запиту протягом останніх 10 хвилин
         query_recent_request = redis_client.get(query.strip())
         if query_recent_request:
             return Response({
                 'detail': 'Query processed successfully',
                 'search_result': json.loads(query_recent_request)
+            })
+
+        # Перевірка користувача на велику кількість запитів
+        user_recent_request = redis_client.get(user_ip)
+        if user_recent_request:
+            return Response({
+                'detail': 'Too many requests. Wait a minute.'
             })
 
         components = main_parser(user_ip=user_ip, query=query)
