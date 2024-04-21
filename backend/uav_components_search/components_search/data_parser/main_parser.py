@@ -4,6 +4,7 @@ from .get_json_data import find_json_files_list, parse_json
 from .tag_parsers import get_parsed_object, parse_tag, parse_tag_element
 from .get_soup import get_soup_playwright, get_soup_requests
 from .collect_data import put_into_csv
+from .extract_price import extract_price
 from ..services import get_redis_connection
 
 
@@ -40,9 +41,18 @@ def scrape_objects(soup, objects_pass_data):
     return objects_list
 
 
+def extract_price_integer(price_string):
+    ...
+
+
 def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_obj, url_obj):
     names, prices, pictures, urls = [], [], [], []
     global all_products
+
+    price_pattern = price_obj.get("extract_pattern")
+    has_price_interval = price_obj.get("has_price_interval")
+    price_separator = price_obj.get("separator")
+    price_currency = price_obj.get("currency")
 
     for product_obj in product_objects:
         name_object = product_obj.find(
@@ -104,8 +114,20 @@ def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_ob
 
         required_fields = [name, price, picture, url]
         if all(required_fields):
+            # TODO: Додати відсіювання невідповідних результатів
             names.append(name)
-            prices.append(price)
+            if price_pattern:
+                prices.append(
+                    extract_price(
+                        price_str=price,
+                        pattern=price_pattern,
+                        has_price_interval=has_price_interval,
+                        separator=price_separator,
+                        currency=price_currency
+                    )
+                )
+            else:
+                prices.append(price)
             pictures.append(picture)
             urls.append(url)
 
