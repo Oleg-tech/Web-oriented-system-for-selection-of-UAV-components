@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-export const fetchProducts = async (query) => {
+export const fetchProducts = async (query, page) => {
     console.log("Query = ", query);
-    const url = "http://127.0.0.1:8000/components/api/search/";
+    const url = `http://127.0.0.1:8000/components/api/search/?page=${page}`;
     const data = { "query": query };
   
     try {

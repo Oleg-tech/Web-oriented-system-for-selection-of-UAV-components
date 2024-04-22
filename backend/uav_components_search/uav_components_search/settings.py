@@ -38,6 +38,11 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
 ]
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'components_search.api.pagination.PageNumberPagination',
+    'PAGE_SIZE': 10
+}
+
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = False
 
