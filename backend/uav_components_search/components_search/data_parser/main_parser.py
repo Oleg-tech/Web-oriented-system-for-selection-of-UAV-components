@@ -55,88 +55,94 @@ def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_ob
     price_currency = price_obj.get("currency")
 
     for product_obj in product_objects:
-        name_object = product_obj.find(
-            name=name_obj["attribute_name"],
-            attrs=name_obj["attrs"]
-        )
+        try:
+            name_object = product_obj.find(
+                name=name_obj["attribute_name"],
+                attrs=name_obj["attrs"]
+            )
 
-        price_object = product_obj.find(
-            name=price_obj["attribute_name"],
-            attrs=price_obj["attrs"]
-        )
+            price_object = product_obj.find(
+                name=price_obj["attribute_name"],
+                attrs=price_obj["attrs"]
+            )
 
-        picture_object = product_obj.find(
-            name=picture_obj["attribute_name"],
-            attrs=picture_obj["attrs"]
-        )
+            picture_object = product_obj.find(
+                name=picture_obj["attribute_name"],
+                attrs=picture_obj["attrs"]
+            )
 
-        url_object = product_obj.find(
-            name=url_obj["attribute_name"],
-            attrs=url_obj["attrs"]
-        )
+            url_object = product_obj.find(
+                name=url_obj["attribute_name"],
+                attrs=url_obj["attrs"]
+            )
 
-        required_objects = [name_object, price_object, picture_object, url_object]
-        if not all(required_objects):
-            # print(f"Name = {name_object}\tPrice = {price_object}\tPicture = {picture_object}\tURL = {url_object}")
-            continue
+            required_objects = [name_object, price_object, picture_object, url_object]
+            if not all(required_objects):
+                print(f"\n\nName = {name_object}\tPrice = {price_object}\tPicture = {picture_object}\tURL = {url_object}\n\n")
+                continue
 
-        name = get_parsed_object(
-            tag_object=name_object,
-            path_to_data=name_obj["path_to_data"],
-            data_source=name_obj["data_source"]
-        )
+            name = get_parsed_object(
+                tag_object=name_object,
+                path_to_data=name_obj["path_to_data"],
+                data_source=name_obj["data_source"]
+            )
 
-        price = get_parsed_object(
-            tag_object=price_object,
-            path_to_data=price_obj["path_to_data"],
-            data_source=price_obj["data_source"]
-        )
+            price = get_parsed_object(
+                tag_object=price_object,
+                path_to_data=price_obj["path_to_data"],
+                data_source=price_obj["data_source"]
+            )
 
-        picture = get_parsed_object(
-            tag_object=picture_object,
-            path_to_data=picture_obj["path_to_data"],
-            data_source=picture_obj["data_source"]
-        )
+            picture = get_parsed_object(
+                tag_object=picture_object,
+                path_to_data=picture_obj["path_to_data"],
+                data_source=picture_obj["data_source"]
+            )
 
-        picture_part_to_add = picture_obj.get("add_to_url")
-        if picture_part_to_add:
-            picture = f"{picture_part_to_add}{picture}"
+            picture_part_to_add = picture_obj.get("add_to_url")
+            if picture_part_to_add:
+                picture = f"{picture_part_to_add}{picture}"
 
-        url = get_parsed_object(
-            tag_object=url_object,
-            path_to_data=url_obj["path_to_data"],
-            data_source=url_obj["data_source"]
-        )
+            url = get_parsed_object(
+                tag_object=url_object,
+                path_to_data=url_obj["path_to_data"],
+                data_source=url_obj["data_source"]
+            )
 
-        url_part_to_add = url_obj.get("add_to_url")
-        if url_part_to_add:
-            url = f"{url_part_to_add}{url}"
+            url_part_to_add = url_obj.get("add_to_url")
+            if url_part_to_add:
+                url = f"{url_part_to_add}{url}"
 
-        required_fields = [name, price, picture, url]
-        if all(required_fields):
-            # TODO: Додати відсіювання невідповідних результатів
-            names.append(name)
-            if price_pattern:
-                prices.append(
-                    extract_price(
-                        price_str=price,
-                        pattern=price_pattern,
-                        has_price_interval=has_price_interval,
-                        separator=price_separator,
-                        currency=price_currency
+            required_fields = [name, price, picture, url]
+            if all(required_fields):
+                # TODO: Додати відсіювання невідповідних результатів
+                names.append(name)
+                if price_pattern:
+                    prices.append(
+                        extract_price(
+                            price_str=price,
+                            pattern=price_pattern,
+                            has_price_interval=has_price_interval,
+                            separator=price_separator,
+                            currency=price_currency
+                        )
                     )
-                )
-            else:
-                prices.append(price)
-            pictures.append(picture)
-            urls.append(url)
+                else:
+                    prices.append(price)
+                pictures.append(picture)
+                urls.append(url)
+        except Exception as ex:
+            # print("\n\n--------------------------------------------\n")
+            # print(product_obj)
+            # print("\n--------------------------------------------\n\n")
+            print("Parser error happened:\n", ex)
 
-    # print("----------------------------------")
-    # print(f'Names ({len(names)}):\n {names}')
-    # print(f'Prices ({len(prices)}):\n', prices, end="\n")
-    # print(f'Pictures ({len(pictures)}):\n', pictures, end="\n")
-    # print(f'Urls ({len(urls)}):\n', urls, end="\n")
-    # print("----------------------------------")
+        # print("----------------------------------")
+        # print(f'Names ({len(names)}):\n {names}')
+        # print(f'Prices ({len(prices)}):\n', prices, end="\n")
+        # print(f'Pictures ({len(pictures)}):\n', pictures, end="\n")
+        # print(f'Urls ({len(urls)}):\n', urls, end="\n")
+        # print("----------------------------------")
 
     shop_component_list = []
     for name, price, img, url in zip(names, prices, pictures, urls):
@@ -268,9 +274,6 @@ def main_parser(user_ip, query):
             # Отримати посилання на наступну сторінку
             url = None
             page_counter += 1
-            if page_counter > 5:
-                print('Забагато сторінок')
-                break
 
             if pagination_type == 'next_page':
                 next_page_obj = source_data['next_page']
@@ -297,3 +300,4 @@ def main_parser(user_ip, query):
     redis_client.set(redis_key, redis_value, ex=60*20)
 
     return all_products
+

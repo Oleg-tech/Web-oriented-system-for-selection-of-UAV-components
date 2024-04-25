@@ -22,6 +22,10 @@ def parse_form(tag_object):
     return tag_object.form
 
 
+def parse_h2(tag_object):
+    return tag_object.h2
+
+
 def parse_tag(tag_object, path_to_data):
     for step in path_to_data:
         if step == "div":
@@ -39,6 +43,9 @@ def parse_tag(tag_object, path_to_data):
         if step == "form":
             tag_object = parse_form(tag_object)
             continue
+        if step == "h2":
+            tag_object = parse_h2(tag_object)
+            continue
 
     return tag_object
 
@@ -47,7 +54,7 @@ def parse_tag_element(tag_object, data_source):
     if data_source == "text":
         tag_object = parse_text(tag_object)
         return tag_object
-    if data_source in ("src", "href", "onmouseover"):
+    if data_source in ("src", "href", "onmouseover", "alt"):
         tag_object = tag_object[data_source]
         return tag_object
 

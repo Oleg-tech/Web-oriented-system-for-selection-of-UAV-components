@@ -21,7 +21,7 @@ def find_json_files_list():
 
 
 def parse_json(source_file_path):
-    with open(source_file_path, 'r') as file:
+    with open(source_file_path, 'r', encoding="utf-8") as file:
         data = json.load(file)
 
     return data
