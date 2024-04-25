@@ -32,12 +32,14 @@ class FindComponentView(APIView):
         shop_filters = all_filters.get('shops')
         min_price_filter = all_filters.get('min_price')
         max_price_filter = all_filters.get('max_price')
+        sorting = all_filters.get('sorting')
 
         print("Query = ", query)
         print("All filters = ", all_filters)
         print("Shop filters = ", shop_filters)
         print("Minimal price = ", min_price_filter)
         print("Maximal price = ", max_price_filter)
+        print("Sorting = ", sorting)
         # print(type(shop_filters))
 
         if not query:
@@ -59,7 +61,8 @@ class FindComponentView(APIView):
                 components=components,
                 shop_filters=shop_filters,
                 min_price_filter=min_price_filter,
-                max_price_filter=max_price_filter
+                max_price_filter=max_price_filter,
+                sorting=sorting
             )
 
             print("Shops = ", shops)
@@ -86,7 +89,8 @@ class FindComponentView(APIView):
             components=components,
             shop_filters=shop_filters,
             min_price_filter=min_price_filter,
-            max_price_filter=max_price_filter
+            max_price_filter=max_price_filter,
+            sorting=sorting
         )
 
         # Пагінація
