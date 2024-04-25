@@ -78,7 +78,7 @@ def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_ob
 
             required_objects = [name_object, price_object, picture_object, url_object]
             if not all(required_objects):
-                print(f"\n\nName = {name_object}\tPrice = {price_object}\tPicture = {picture_object}\tURL = {url_object}\n\n")
+                # print(f"\n\nName = {name_object}\tPrice = {price_object}\tPicture = {picture_object}\tURL = {url_object}\n\n")
                 continue
 
             name = get_parsed_object(

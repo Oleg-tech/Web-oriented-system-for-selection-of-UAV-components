@@ -12,6 +12,7 @@ from .services import get_redis_connection
 from .api.pagination import ComponentsResultPagination
 from .api.serializers import ComponentSerializer
 from .api.filters import create_result_components_list
+from .get_current_exchange_rate import main_exchange_rate
 
 
 def index(request):
@@ -50,7 +51,10 @@ class FindComponentView(APIView):
         user_ip = get_user_ip(request)
         redis_client = get_redis_connection()
 
-        # Перевірка наявності такого запиту протягом останніх 10 хвилин
+        # Оновлення курсу валют
+        main_exchange_rate()
+
+        # Перевірка наявності такого запиту протягом останніх 20 хвилин
         query_recent_request = redis_client.get(query.strip())
         if query_recent_request:
             components = json.loads(query_recent_request)
