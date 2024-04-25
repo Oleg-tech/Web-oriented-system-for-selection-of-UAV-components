@@ -3,7 +3,7 @@ from rest_framework.response import Response
 
 
 class ComponentsResultPagination(PageNumberPagination):
-    page_size = 30
+    page_size = 32
     max_page_size = 100
     shops = None
 
