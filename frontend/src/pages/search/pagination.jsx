@@ -1,5 +1,6 @@
 import React from "react";
 import { GrPrevious, GrNext } from "react-icons/gr";
+// import "./pagination.css";
 
 export const Pagination = ({ componentsNumber, componentsPerPage, currentPage, setCurrentPage }) => {
     let pages = [];
