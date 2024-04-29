@@ -33,7 +33,7 @@ def extract_price(price_str, pattern, has_price_interval, separator, currency):
             match = re.search(pattern, parts[-1])
             if match:
                 price = float(match.group(1).replace(',', '').replace(' ', ''))
-                # print("Before convert 1 = ", price)
+                print("Before convert 1 = ", price)
                 return convert_to_uah(price, currency)
 
         # Finish this part
@@ -50,14 +50,14 @@ def extract_price(price_str, pattern, has_price_interval, separator, currency):
         interval_price_1 = float(parts[0].strip().replace(',', '').replace(' ', ''))
 
         compiled_pattern = re.compile(pattern)
-        print("Pattern = ", compiled_pattern)
+        # print("Pattern = ", compiled_pattern)
         interval_match_2 = compiled_pattern.search(parts[1])
-        print(f"I1 = {interval_price_1} I2 = {interval_match_2}")
+        # print(f"I1 = {interval_price_1} I2 = {interval_match_2}")
 
         if interval_match_2:
             interval_price_2 = float(interval_match_2.group(1).replace(',', '').replace(' ', ''))
 
-            print(f"Intervals = {interval_price_1} - {interval_price_2}")
+            # print(f"Intervals = {interval_price_1} - {interval_price_2}")
 
             # return [interval_price_1, interval_price_2]
             return f"{interval_price_1} - {interval_price_2}"

@@ -29,12 +29,23 @@ def filter_by_price(components, min_price: float, max_price: float):
     return filtered_components
 
 
+def sort_from_cheap(components) -> list:
+    return sorted(components, key=lambda x: float(str(x["componentPrice"]).split('-')[0]), reverse=False)
+
+
+def sort_from_expensive(components) -> list:
+    return sorted(components, key=lambda x: float(str(x["componentPrice"]).split('-')[0]), reverse=True)
+
+
 def sort_components(components, sorting_by):
-    sorted_components = []
+    if sorting_by == 'most_appropriate':
+        return components
+    if sorting_by == 'cheapest':
+        return sort_from_cheap(components=components)
+    if sorting_by == 'expensive':
+        return sort_from_expensive(components=components)
 
-    sorted_components = components
-
-    return sorted_components
+    return components
 
 
 def create_result_components_list(components, shop_filters, min_price_filter, max_price_filter, sorting):
@@ -44,19 +55,45 @@ def create_result_components_list(components, shop_filters, min_price_filter, ma
             shop_names=shop_filters
         )
 
-    # if min_price_filter and max_price_filter:
-    #     components = filter_by_price(
-    #         components=components,
-    #         min_price=float(min_price_filter),
-    #         max_price=float(max_price_filter)
-    #     )
+    if min_price_filter and max_price_filter:
+        components = filter_by_price(
+            components=components,
+            min_price=float(min_price_filter),
+            max_price=float(max_price_filter)
+        )
 
-    # if sorting:
-    #     components = sort_components(
-    #         components=components,
-    #         sorting_by=sorting
-    #     )
+    if sorting:
+        components = sort_components(
+            components=components,
+            sorting_by=sorting
+        )
 
-    components = sorted(components, key=lambda x: x['componentShopName'])
+    # components = sorted(components, key=lambda x: x['componentShopName'])
 
     return components
+
+
+def get_min_and_max(components):
+    if len(components) == 0:
+        return None, None
+
+    min_value = 0
+    max_value = components[0]['componentPrice']
+
+    for component in components:
+        price_range = str(component['componentPrice']).split(' - ')
+
+        if len(price_range) == 2:
+            if int(price_range[0]) < min_value:
+                min_value = int(float(price_range[0]))
+            if int(price_range[1]) > max_value:
+                max_value = int(float(price_range[1]))
+        elif len(price_range) == 1:
+            price = int(float(price_range[0]))
+
+            if price < min_value:
+                min_value = price
+            if price > max_value:
+                max_value = price
+
+    return min_value, max_value

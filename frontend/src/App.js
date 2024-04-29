@@ -9,7 +9,9 @@ import { Cart } from "./pages/cart/cart";
 
 function App() {
   return (
-    <div>
+    <div 
+      // style={{backgroundColor: "#eee"}}
+    >
       <BrowserRouter>
         <Navbar />
         <Routes>

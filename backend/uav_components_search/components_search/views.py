@@ -11,7 +11,7 @@ from .utils import get_user_ip
 from .services import get_redis_connection
 from .api.pagination import ComponentsResultPagination
 from .api.serializers import ComponentSerializer
-from .api.filters import create_result_components_list
+from .api.filters import create_result_components_list, get_min_and_max
 from .get_current_exchange_rate import main_exchange_rate
 
 
@@ -59,6 +59,9 @@ class FindComponentView(APIView):
         if query_recent_request:
             components = json.loads(query_recent_request)
 
+            min_price, max_price = get_min_and_max(components=components)
+            print(min_price, max_price)
+
             shops = extract_shops(components)
 
             components = create_result_components_list(
@@ -71,7 +74,13 @@ class FindComponentView(APIView):
 
             print("Shops = ", shops)
             print("Number of components = ", len(components))
-            result_page = paginator.paginate_queryset(components, request, shops=shops)
+            result_page = paginator.paginate_queryset(
+                queryset=components,
+                request=request,
+                shops=shops,
+                min_price=min_price,
+                max_price=max_price
+            )
             serializer = ComponentSerializer(result_page, many=True)
 
             return paginator.get_paginated_response(
@@ -87,6 +96,9 @@ class FindComponentView(APIView):
 
         components = main_parser(user_ip=user_ip, query=query)
 
+        min_price, max_price = get_min_and_max(components=components)
+        print(min_price, max_price)
+
         shops = extract_shops(components=components)
 
         components = create_result_components_list(
@@ -99,7 +111,13 @@ class FindComponentView(APIView):
 
         # Пагінація
         print("Shops = ", shops)
-        result_page = paginator.paginate_queryset(components, request, shops=shops)
+        result_page = paginator.paginate_queryset(
+            queryset=components,
+            request=request,
+            shops=shops,
+            min_price=min_price,
+            max_price=max_price
+        )
         serializer = ComponentSerializer(result_page, many=True)
 
         return paginator.get_paginated_response(serializer.data)

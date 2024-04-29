@@ -189,10 +189,6 @@ def get_next_page_from_button(soup, next_page_obj):
     return next_page
 
 
-def get_next_page_add_to_url(url, add_to_url):
-    ...
-
-
 def main_parser(user_ip, query):
     all_products.clear()
     json_files_list = find_json_files_list()
@@ -294,7 +290,7 @@ def main_parser(user_ip, query):
                 print("Нову сторінку не знайдено")
                 break
 
-    # Key will be stored for 10 minutes
+    # Key will be stored for 20 minutes
     redis_key = f"{query}"
     redis_value = json.dumps(all_products)
     redis_client.set(redis_key, redis_value, ex=60*20)
