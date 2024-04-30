@@ -5,13 +5,24 @@ import { GrPrevious, GrNext } from "react-icons/gr";
 export const Pagination = ({ componentsNumber, componentsPerPage, currentPage, setCurrentPage }) => {
     let pages = [];
     for (let i = 1; i <= Math.ceil(componentsNumber / componentsPerPage); i++) {
-        pages.push(
-            <li key={i} className="page-item">
-                <button key={i} onClick={() => setCurrentPage(i)} className="page-link">
-                    {i}
-                </button>
-            </li>
-        );
+        if (currentPage != i) {
+            pages.push(
+                <li key={i} className="page-item">
+                    <button key={i} onClick={() => setCurrentPage(i)} className="page-link" style={{ fontSize: "16px" }}>
+                        {i}
+                    </button>
+                </li>
+            );
+        }
+        else {
+            pages.push(
+                <li key={i} className="page-item" style={{ backgroundColor: "#C7CAC7", border: "1px solid #ccc", borderRadius: "5px" }}>
+                    <button key={i} onClick={() => setCurrentPage(i)} className="page-link" disabled style={{ fontSize: "16px" }}>
+                        {i}
+                    </button>
+                </li>
+            );
+        }
     }
 
     return (

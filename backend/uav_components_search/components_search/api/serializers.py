@@ -7,3 +7,4 @@ class ComponentSerializer(serializers.Serializer):
     componentImageURL = serializers.URLField()
     componentExternalURL = serializers.URLField()
     componentShopName = serializers.CharField()
+    componentCountry = serializers.CharField(default=None)

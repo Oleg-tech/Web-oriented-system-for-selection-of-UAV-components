@@ -1,8 +1,10 @@
 import React, { useEffect, useState, useRef } from 'react';
 import "./price-range-filter.css";
+import "./checkbox.css";
 
 export const Filter = ({
-    query, shops, selectedShops, setSelectedShops, 
+    query, shops, selectedShops, setSelectedShops,
+    countries, selectedCountries, setSelectedCountries,
     setMinRangePrice, setMaxRangePrice,
     minRangePrice, maxRangePrice, setMinBufRangePrice, setMaxBufRangePrice, setResetPage
   }) => {
@@ -138,6 +140,18 @@ export const Filter = ({
     console.log("Selected shops = ", selectedShops);
   };
 
+  const handleCountryChange = (country) => {
+    setResetPage(true);
+    
+    if (selectedCountries.includes(country)) {
+      setSelectedCountries(selectedCountries.filter((s) => s !== country));
+    } else {
+      setSelectedCountries([...selectedCountries, country]);
+    }
+    console.log("Country = ", country);
+    console.log("Selected countries = ", selectedCountries);
+  };
+
   // Обробка зміни інтервалу цін
   const handlePriceRangeChange = () => {
     console.log("\n\nMin range = ", minPrice);
@@ -156,6 +170,7 @@ export const Filter = ({
   const handleFilterReset = () => {
     console.log("Reset");
     setSelectedShops([]);
+    setSelectedCountries([]);
     setMinBufRangePrice(null);
     setMaxBufRangePrice(null);
   };
@@ -172,23 +187,24 @@ export const Filter = ({
     >
       <div className="filter-container">
         <div align="center">
-          <h4 className="w3-bar-item">Фільтри</h4>
-          <button onClick={handleFilterReset} className="w3-button w3-black">Очистити фільтри</button>
+          <h4 className="w3-bar-item main-title">Фільтри</h4>
+          <button onClick={handleFilterReset} className="w3-button w3-black" style={{ marginTop: "5px" }}>Очистити фільтри</button>
         </div>
 
-        <div>
-          <h5 className="w3-bar-item">Магазини</h5>
+        <div style={{ marginTop: "15px" }}>
+          <h5 className="w3-bar-item sub-title">Магазини</h5>
           {Array.isArray(shops) && shops.length > 0 ? (
-            <ul className="shop-list">
+            <ul className="shop-list" style={{ paddingLeft: "10px" }}>
               {shops.map((shop, index) => (
-                <li key={index} className="w3-bar-item w3-button">
-                  <label>
+                <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "4px", paddingTop: "4px" }}>
+                  <label className="custom-checkbox">
                     <input
                       type="checkbox"
                       checked={selectedShops.includes(shop)}
                       onChange={() => handleShopChange(shop)}
                     />
-                    {shop}
+                    <span className="checkmark"></span>
+                    <span className="label-text">{shop}</span>
                   </label>
                 </li>
               ))}
@@ -199,8 +215,7 @@ export const Filter = ({
         </div>
 
         <div className="price-filter">
-          <h5 className="w3-bar-item">Ціна</h5>
-
+          <h5 className="w3-bar-item sub-title" style={{ marginTop: 0, paddingTop: 0 }}>Ціна</h5>
           <div className="custom-wrapper">
             <div className="price-input-container">
               <div className="price-input">
@@ -255,6 +270,29 @@ export const Filter = ({
           <div align="center">
             <button className="w3-button w3-black" onClick={handlePriceRangeChange}>Застосувати</button>
           </div>
+
+          <div style={{ marginTop: "15px" }}>
+          <h5 className="w3-bar-item sub-title">Країни</h5>
+          {Array.isArray(countries) && countries.length > 0 ? (
+            <ul className="shop-list" style={{ paddingLeft: "10px" }}>
+              {countries.map((country, index) => (
+                <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "4px", paddingTop: "4px" }}>
+                  <label className="custom-checkbox">
+                    <input
+                      type="checkbox"
+                      // checked={selectedCountries.includes(country)}
+                      onChange={() => handleCountryChange(country)}
+                    />
+                    <span className="checkmark"></span>
+                    <span className="label-text">{country}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Немає доступних країн</p>
+          )}
+        </div>
         </div>
       </div>
     </div>
