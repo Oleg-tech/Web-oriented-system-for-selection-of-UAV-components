@@ -9,8 +9,6 @@ export const Cart = () => {
       setCartItems(storedCartItems);
     }, []);
 
-    // console.log("cartItems = ", cartItems);
-
     const clearCart = () => {
         console.log("Clear cart");
         setCartItems([]);

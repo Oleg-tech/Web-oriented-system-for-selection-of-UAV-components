@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from "react";
 import cancel from "./cancel.png";
 
+const formatPrice = (price) => {
+    if (typeof price === 'string') {
+      const [minPrice, maxPrice] = price.split(' - ');
+
+      if (maxPrice) {
+        return `${parseFloat(minPrice).toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} - ${parseFloat(maxPrice).toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₴`;
+      } else {
+        return `${parseFloat(minPrice).toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₴`;
+      }
+    }
+  
+    return `${price.toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₴`;
+};
 
 export const CartProduct = (props) => {
     const { name, imageURL, externalURL, price, shopName } = props.data;
@@ -51,7 +64,7 @@ export const CartProduct = (props) => {
 
                         <div class="d-flex justify-content-between">
                             <h5 class="text-dark mb-0">
-                                {price}
+                                {formatPrice(price)}
                             </h5>
                         </div>
 

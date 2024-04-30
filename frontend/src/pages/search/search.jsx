@@ -84,8 +84,6 @@ export const Search = () => {
 
   const handleSortChange = (event) => {
     const sortOption = event.target.value;
-  
-    console.log("Sort option = ", sortOption);
 
     setResetPage(true);
     setSorting(sortOption);
