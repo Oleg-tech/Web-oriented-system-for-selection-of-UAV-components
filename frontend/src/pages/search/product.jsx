@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { SuitHeart } from 'react-bootstrap-icons';
 
 const formatPrice = (price) => {
@@ -17,12 +17,90 @@ const formatPrice = (price) => {
 
 export const Product = (props) => {
     const { componentName, componentPrice, componentImageURL, componentExternalURL, componentShopName } = props.data;
+
+    const [isDuplicate, setIsDuplicate] = useState(false);
+
+    const addToFavorites = () => {
+        const item = {
+          name: componentName,
+          imageURL: componentImageURL,
+          price: componentPrice,
+          externalURL: componentExternalURL,
+          shopName: componentShopName
+        };
+
+        const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+        favorites.push(item);
+        localStorage.setItem('favorites', JSON.stringify(favorites));
+        setIsDuplicate(true);
+    };
+
+    const deleteFromFavorites = () => {
+        const updatedCart = JSON.parse(localStorage.getItem('favorites')) || [];
+        const index = updatedCart.findIndex(item => (
+            item.name === componentName &&
+            item.imageURL === componentImageURL &&
+            item.price === componentPrice &&
+            item.externalURL === componentExternalURL &&
+            item.shopName === componentShopName
+        ));
+        
+        if (index !== -1) {
+            updatedCart.splice(index, 1);
+            localStorage.setItem('favorites', JSON.stringify(updatedCart));
+            setIsDuplicate(false);
+        }
+    };
+
+    const findDuplicates = () => {
+        const favorites = JSON.parse(localStorage.getItem('favorites')) || [];
+
+        setIsDuplicate(
+            favorites.some(item => (
+                item.name === componentName &&
+                item.imageURL === componentImageURL &&
+                item.price === componentPrice &&        
+                item.externalURL === componentExternalURL &&
+                item.shopName === componentShopName
+            ))
+        );
+    }
+
+    useEffect(() => {
+        findDuplicates();
+    }, []);
+
     return (
         <div class="col-md-3 col-lg-3 mb-1 mb-lg-1">
             <div class="card custom-card" style={{ border: "1px solid gray" }}>
                 <div class="d-flex justify-content-between pr-3 pt-3">
                     <div class="d-flex align-items-center"><p class="lead mb-0"></p></div>
-                    <SuitHeart style={{ fontSize: '24px', marginRight: '10px' }} />
+                    {!isDuplicate ? (
+                        <button
+                            style={{
+                                border: 'none',
+                                background: 'none',
+                                cursor: 'pointer'
+                            }}
+                            onClick={addToFavorites}
+                        >
+                            <SuitHeart style={{ fontSize: '24px', marginRight: '10px' }} />
+                        </button>
+                    ) :
+                        <button
+                            style={{
+                                border: 'none',
+                                background: 'none',
+                                cursor: 'pointer'
+                            }}
+                            onClick={deleteFromFavorites}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" style={{ fontSize: '24px', marginRight: '10px' }} width="24px" height="24px" fill="currentColor" class="bi bi-x-circle" viewBox="0 0 16 16">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708"/>
+                            </svg>
+                        </button>
+                    }
                 </div>
                 <a href={componentExternalURL} target="_blank" class="card-link">
                     <img 
@@ -56,18 +134,4 @@ export const Product = (props) => {
             </div>
         </div>
     );
-
-    <div className="card">
-    <img src={componentImageURL} className="card-img-to" alt="..."/>
-    <div className="card-body">
-        <a href={componentExternalURL}>
-            <h5 className="card-title">
-                <b>{componentName}</b>
-            </h5>
-            <p className="card-text">{componentPrice}</p>
-            <p>{componentShopName}</p>
-        </a>
-    </div>
-    <button className="addToCartBttn">Порівняти</button>
-    </div>
 };
