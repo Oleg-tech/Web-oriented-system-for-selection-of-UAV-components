@@ -1,6 +1,4 @@
 import json
-from django.shortcuts import render
-from django.contrib import messages
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -41,7 +39,6 @@ class FindComponentView(APIView):
         print("Minimal price = ", min_price_filter)
         print("Maximal price = ", max_price_filter)
         print("Sorting = ", sorting)
-        # print(type(shop_filters))
 
         if not query:
             return Response({'detail': 'Введіть товар для пошуку'}, status=status.HTTP_400_BAD_REQUEST)

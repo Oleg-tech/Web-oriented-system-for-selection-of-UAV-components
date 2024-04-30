@@ -1,6 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-// import Home from './pages/Home';
-// import Search from './pages/Search';
 import NoPage from './pages/NoPage';
 import { Navbar } from './components/navbar';
 import { Home } from "./pages/home/home";

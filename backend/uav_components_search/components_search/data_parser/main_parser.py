@@ -1,6 +1,7 @@
 import json
 
 from .get_json_data import find_json_files_list, parse_json
+from .remove_inappropriate import remove_inappropriate_components
 from .tag_parsers import get_parsed_object, parse_tag, parse_tag_element
 from .get_soup import get_soup_playwright, get_soup_requests
 from .collect_data import put_into_csv
@@ -290,10 +291,16 @@ def main_parser(user_ip, query):
                 print("Нову сторінку не знайдено")
                 break
 
+    # Verify components according to query
+    verified_components_result = remove_inappropriate_components(
+        query=query,
+        components=all_products
+    )
+
     # Key will be stored for 20 minutes
     redis_key = f"{query}"
-    redis_value = json.dumps(all_products)
+    redis_value = json.dumps(verified_components_result)
     redis_client.set(redis_key, redis_value, ex=60*20)
 
-    return all_products
+    return verified_components_result
 
