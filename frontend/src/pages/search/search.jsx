@@ -16,15 +16,15 @@ import "./component-card.css";
 
 const ProductList = ({ search_result }) => {
   return (
-      <div class="container py-2">
-        <div class="row">
-            {Array.isArray(search_result) && search_result.length > 0 ? (
-                search_result.map((product) => <Product key={product.id} data={product} />)
-            ) : (
-                <p>Немає результатів для введеного запиту</p>
-            )}
-        </div>
+    <div class="container py-2">
+      <div class="row">
+          {Array.isArray(search_result) && search_result.length > 0 ? (
+            search_result.map((product) => <Product key={product.id} data={product} />)
+          ) : (
+            <p>Немає результатів для введеного запиту</p>
+          )}
       </div>
+    </div>
   );
 };
 
@@ -63,9 +63,6 @@ export const Search = () => {
     setShopList(shop_list);
     setComponentsNumber(componentsNumber);
 
-    console.log("\n\nMin price! = ", parseInt(getMinRangePrice(search_result)));
-    console.log("Max price! = ", parseInt(getMaxRangePrice(search_result)));
-
     let { min_price, max_price } = newData;
 
     if ( min_price && max_price) {
@@ -85,14 +82,6 @@ export const Search = () => {
     }
   };
 
-  // const handleSortChange = async (event) => {
-  //   const sortOption = event.target.value;
-  
-  //   console.log("Sort option = ", sortOption);
-  
-  //   await fetchData(sortOption);
-  // };
-
   const handleSortChange = (event) => {
     const sortOption = event.target.value;
   
@@ -101,8 +90,6 @@ export const Search = () => {
     setResetPage(true);
     setSorting(sortOption);
   };
-
-///////////////////////////////////////
 
   // Get data from server
   const fetchData = async () => {
@@ -127,65 +114,63 @@ export const Search = () => {
     }
   }, [query, currentPage, selectedShops, minBufRangePrice, maxBufRangePrice, sorting]);
 
-////////////////////////////////////////////////////
-
   if (query === "") {
     return (
       <div className="shop">
-      <div className="w3-sidebar w3-bar-block w3-card" style={{ width: '17%', left: 0 }}>
-        <Filter
-          query={query}
-          shops={shopList}
-          selectedShops={selectedShops}
-          setSelectedShops={setSelectedShops}
-          setMinRangePrice={setMinRangePrice}
-          setMaxRangePrice={setMaxRangePrice}
-          minRangePrice={minRangePrice}
-          maxRangePrice={maxRangePrice}
-          setMinBufRangePrice={setMinBufRangePrice}
-          setMaxBufRangePrice={setMaxBufRangePrice}
-        />
-      </div>
+        <div className="w3-sidebar w3-bar-block w3-card" style={{ width: '17%', left: 0 }}>
+          <Filter
+            query={query}
+            shops={shopList}
+            selectedShops={selectedShops}
+            setSelectedShops={setSelectedShops}
+            setMinRangePrice={setMinRangePrice}
+            setMaxRangePrice={setMaxRangePrice}
+            minRangePrice={minRangePrice}
+            maxRangePrice={maxRangePrice}
+            setMinBufRangePrice={setMinBufRangePrice}
+            setMaxBufRangePrice={setMaxBufRangePrice}
+          />
+        </div>
 
-      <div className="product-info" style={{marginLeft: '17%', marginRight: '1%'}}>
-        <div className="input-group" style={{ paddingTop: "10px", paddingBottom: "10px", paddingLeft: "20px", maxWidth: "700px" }}>
-          <div className="form-outline">
-            <MDBInput id="search-focus component-search-input" type="search" className="form-control" label="Пошук" name="query"/>
+        <div className="product-info" style={{marginLeft: '17%', marginRight: '1%'}}>
+          <div className="input-group" style={{ paddingTop: "10px", paddingBottom: "10px", paddingLeft: "20px", maxWidth: "700px" }}>
+            <div className="form-outline">
+              <MDBInput id="search-focus component-search-input" type="search" className="form-control" label="Пошук" name="query"/>
+            </div>
+            <MDBBtn color="primary" onClick={() => setQuery(document.getElementById("search-focus component-search-input").value)}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
+                <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
+              </svg>
+            </MDBBtn>
           </div>
-          <MDBBtn color="primary" onClick={() => setQuery(document.getElementById("search-focus component-search-input").value)}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-search" viewBox="0 0 16 16">
-              <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001q.044.06.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1 1 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0"/>
-            </svg>
-          </MDBBtn>
-        </div>
 
-        <div>
-          <div className="product-count" style={{
-            fontSize: '1.5rem',
-            color: '#333',
-            fontWeight: 'bold',
-            textTransform: 'uppercase',
-            letterSpacing: '1px',
-            marginLeft: '10px',
-            paddingTop: '15px',
-            float: 'left'
-          }}>
+          <div>
+            <div className="product-count" style={{
+              fontSize: '1.5rem',
+              color: '#333',
+              fontWeight: 'bold',
+              textTransform: 'uppercase',
+              letterSpacing: '1px',
+              marginLeft: '10px',
+              paddingTop: '15px',
+              float: 'left'
+            }}>
+            </div>
+            <div style={{ float: 'right' }}></div>
+            <div style={{ clear: 'both' }}></div>
           </div>
-          <div style={{ float: 'right' }}></div>
-          <div style={{ clear: 'both' }}></div>
-        </div>
 
-        <div className="products" style={{ 
-          paddingLeft: "20px",
-          fontSize: "30px",
-          lineHeight: "1.5",
-          fontWeight: "bold",
-          color: "#333" }}
-        >
-          Введіть комплектуючі для пошуку
+          <div className="products" style={{ 
+            paddingLeft: "20px",
+            fontSize: "30px",
+            lineHeight: "1.5",
+            fontWeight: "bold",
+            color: "#333" }}
+          >
+            Введіть комплектуючі для пошуку
+          </div>
         </div>
       </div>
-    </div>
     );
   }
 

@@ -84,9 +84,9 @@ def get_min_and_max(components):
         price_range = str(component['componentPrice']).split(' - ')
 
         if len(price_range) == 2:
-            if int(price_range[0]) < min_value:
+            if int(float(price_range[0])) < min_value:
                 min_value = int(float(price_range[0]))
-            if int(price_range[1]) > max_value:
+            if int(float(price_range[1])) > max_value:
                 max_value = int(float(price_range[1]))
         elif len(price_range) == 1:
             price = int(float(price_range[0]))
