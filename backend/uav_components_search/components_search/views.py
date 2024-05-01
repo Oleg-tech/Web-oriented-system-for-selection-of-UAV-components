@@ -1,3 +1,4 @@
+import os
 import json
 import asyncio
 import concurrent.futures
@@ -223,16 +224,111 @@ def get_shops_data():
     return shops_data
 
 
+def extract_shop_json(shop_url):
+    json_files = find_json_files_list()
+
+    for json_file in json_files:
+        extracted_data = parse_json(json_file)
+        if extracted_data["base_url"] == shop_url:
+            data = {
+                "file_name": json_file.split('\\')[-1],
+                "data": extracted_data
+            }
+
+            return data
+
+    return None
+
+
+def delete_shop(shop_url):
+    json_files = find_json_files_list()
+
+    try:
+        for json_file in json_files:
+            extracted_data = parse_json(json_file)
+            if extracted_data["base_url"] == shop_url:
+                os.remove(json_file)
+                print("Файл успішно видалено")
+    except FileNotFoundError:
+        print("Файл не знайдено")
+    except PermissionError:
+        print("Немає дозволу на видалення файлу")
+    except Exception as e:
+        print("Помилка при видаленні файлу:", e)
+
+    return Response({"detail": "Shop deleted successfully"})
+
+
+def update_file(shop_url, new_file):
+    json_files = find_json_files_list()
+
+    try:
+        for json_file in json_files:
+            extracted_data = parse_json(json_file)
+            if extracted_data["base_url"] == shop_url:
+                # os.remove(json_file)
+                print("URL = ", extracted_data["base_url"])
+                print("Json file = ", json_file)
+                print("new file = ", new_file)
+
+                with open(json_file, 'wb') as f:
+                    f.write(new_file.read())
+
+                print("Файл успішно оновлено")
+    except FileNotFoundError:
+        print("Файл не знайдено")
+    except PermissionError:
+        print("Немає дозволу на видалення файлу")
+    except Exception as e:
+        print("Помилка при видаленні файлу:", e)
+
+    return Response({"detail": "Shop updated successfully"})
+
+
 class AdminComponentFileView(APIView):
     def get(self, request, *args, **kwargs):
-        # Name, country
         shops = get_shops_data()
 
-        print("post method admin")
-
-        return Response({"1": shops})
+        return Response({"shops": shops})
 
     def post(self, request, *args, **kwargs):
-        print("post method admin")
+        operation = request.data.get('operation')
+        shop_url = request.data.get('shop_url')
 
-        return Response({"1": 1})
+        print("Operation = ", operation)
+        print("Shop URL = ", shop_url)
+
+        if operation == "add":
+            full_path = "./components_search/data_parser/component_source_data"
+
+            new_file = request.data.get('file')
+            new_file_name = f"{full_path}\\{request.data.get('filename')}"
+
+            with open(new_file_name, 'wb') as f:
+                f.write(new_file.read())
+            print("File successfully saved:", new_file_name)
+
+        if operation == "download":
+            shop_data = extract_shop_json(
+                shop_url=shop_url
+            )
+            return Response({"data": shop_data})
+
+        if operation == "send":
+            print("Filename = ", request.data.get('filename'))
+            full_path = "./components_search/data_parser/component_source_data"
+
+            new_file = request.data.get('file')
+            new_file_name = f"{full_path}\\{request.data.get('filename')}"
+
+            update_file(
+                shop_url=shop_url,
+                new_file=new_file
+            )
+
+        if operation == "delete":
+            delete_shop(
+                shop_url=shop_url
+            )
+
+        return Response({"shops": 1})
