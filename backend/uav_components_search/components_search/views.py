@@ -1,10 +1,15 @@
 import json
+import asyncio
+import concurrent.futures
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import HttpResponse
 
+from .data_parser.get_json_data import find_json_files_list, parse_json
 from .data_parser.main_parser import main_parser
+from .data_parser.asyncio_main_parser import asyncio_main_parser
+from .data_parser.remove_inappropriate import remove_inappropriate_components
 from .utils import get_user_ip
 from .services import get_redis_connection
 from .api.pagination import ComponentsResultPagination
@@ -17,14 +22,27 @@ def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
 
+def fill_countries(components):
+    ...
+
+
 def extract_shops(components):
     list_of_shops = [component['componentShopName'] for component in components]
     return set(list_of_shops)
 
 
 def extract_countries(components):
-    list_of_countries = [component['componentCountry'] for component in components]
+    list_of_countries = [component.get('componentCountry') for component in components]
     return set(list_of_countries)
+
+
+def run_asyncio_main_parser(user_ip, query):
+    loop = asyncio.new_event_loop()
+    try:
+        components = loop.run_until_complete(asyncio_main_parser(user_ip, query))
+    finally:
+        loop.close()
+    return components
 
 
 class FindComponentView(APIView):
@@ -101,7 +119,21 @@ class FindComponentView(APIView):
                 'detail': 'Too many requests. Wait a minute.'
             })
 
-        components = main_parser(user_ip=user_ip, query=query)
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            future = executor.submit(run_asyncio_main_parser, user_ip, query)
+            components = future.result()
+
+        # Відсіяти зайві результати
+        components = remove_inappropriate_components(
+            query=query,
+            components=components
+        )
+
+        # Зберегти результат запиту в Redis
+        redis_client = get_redis_connection()
+        redis_key = f"{query}"
+        redis_value = json.dumps(components)
+        redis_client.set(redis_key, redis_value, ex=60 * 30)
 
         min_price, max_price = get_min_and_max(components=components)
         print(min_price, max_price)
@@ -169,3 +201,38 @@ class DownloadComponentView(APIView):
         serializer = ComponentSerializer(components, many=True)
 
         return Response(serializer.data)
+
+
+def get_shops_data():
+    shops_data = []
+    json_files = find_json_files_list()
+
+    for json_file in json_files:
+        try:
+            extracted_data = parse_json(json_file)
+            shops_data.append(
+                {
+                    "name": extracted_data["shop_name"],
+                    "base_url": extracted_data["base_url"],
+                    "country": extracted_data["country"]
+                }
+            )
+        except Exception as ex:
+            print("Error with extracting data from json file:\n", ex)
+
+    return shops_data
+
+
+class AdminComponentFileView(APIView):
+    def get(self, request, *args, **kwargs):
+        # Name, country
+        shops = get_shops_data()
+
+        print("post method admin")
+
+        return Response({"1": shops})
+
+    def post(self, request, *args, **kwargs):
+        print("post method admin")
+
+        return Response({"1": 1})

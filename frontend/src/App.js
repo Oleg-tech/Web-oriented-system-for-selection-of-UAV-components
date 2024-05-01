@@ -4,6 +4,7 @@ import { Navbar } from './components/navbar';
 import { Home } from "./pages/home/home";
 import { Search } from "./pages/search/search";
 import { Cart } from "./pages/cart/cart";
+import { Admin } from "./pages/admin/admin"
 
 function App() {
   return (
@@ -13,8 +14,9 @@ function App() {
       <BrowserRouter>
         <Navbar />
         <Routes>
-          <Route index element={<Home />} />
+          <Route index element={<Search />} />
           <Route path="/home" element={<Home />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/search" element={<Search />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="*" element={<NoPage />} />

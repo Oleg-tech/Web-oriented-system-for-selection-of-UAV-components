@@ -24,7 +24,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'corsheaders',
     'rest_framework',
-    'components_search',
+    'components_search'
 ]
 
 MIDDLEWARE = [

@@ -1,3 +1,6 @@
+import sys
+
+
 def filter_by_shop_name(components, shop_names):
     shop_names = [name.lower() for name in shop_names.split(',')]
 
@@ -90,11 +93,11 @@ def create_result_components_list(components, shop_filters, countries_filters, m
 
 
 def get_min_and_max(components):
-    if len(components) == 0:
+    if not components:
         return None, None
 
-    min_value = 0
-    max_value = components[0]['componentPrice']
+    max_value = 0
+    min_value = sys.maxsize
 
     for component in components:
         price_range = str(component['componentPrice']).split(' - ')
