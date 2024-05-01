@@ -154,8 +154,8 @@ export const Filter = ({
 
   // Обробка зміни інтервалу цін
   const handlePriceRangeChange = () => {
-    console.log("\n\nMin range = ", minPrice);
-    console.log("Max range = ", maxPrice);
+    // console.log("\n\nMin range = ", minPrice);
+    // console.log("Max range = ", maxPrice);
 
     setMinRangePrice(minPrice);
     setMaxRangePrice(maxPrice);
@@ -163,12 +163,12 @@ export const Filter = ({
     setMaxBufRangePrice(maxPrice);
   };
 
-  console.log("MinP: ", minPrice, " != ", minRangePrice);
-  console.log("MaxP: ", maxPrice, " != ", maxRangePrice);
+  // console.log("MinP: ", minPrice, " != ", minRangePrice);
+  // console.log("MaxP: ", maxPrice, " != ", maxRangePrice);
 
   // Обробка зкидання фільтрів
   const handleFilterReset = () => {
-    console.log("Reset");
+    // console.log("Reset");
     setSelectedShops([]);
     setSelectedCountries([]);
     setMinBufRangePrice(null);
@@ -191,32 +191,9 @@ export const Filter = ({
           <button onClick={handleFilterReset} className="w3-button w3-black" style={{ marginTop: "5px" }}>Очистити фільтри</button>
         </div>
 
-        <div style={{ marginTop: "15px" }}>
-          <h5 className="w3-bar-item sub-title">Магазини</h5>
-          {Array.isArray(shops) && shops.length > 0 ? (
-            <ul className="shop-list" style={{ paddingLeft: "10px" }}>
-              {shops.map((shop, index) => (
-                <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "4px", paddingTop: "4px" }}>
-                  <label className="custom-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={selectedShops.includes(shop)}
-                      onChange={() => handleShopChange(shop)}
-                    />
-                    <span className="checkmark"></span>
-                    <span className="label-text">{shop}</span>
-                  </label>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p>Немає доступних магазинів</p>
-          )}
-        </div>
-
-        <div className="price-filter">
+        <div className="price-filter" style={{ marginTop: "15px", paddingBottom: "15px" }}>
           <h5 className="w3-bar-item sub-title" style={{ marginTop: 0, paddingTop: 0 }}>Ціна</h5>
-          <div className="custom-wrapper">
+          <div className="custom-wrapper" style={{ paddingBottom: "0px" }}>
             <div className="price-input-container">
               <div className="price-input">
                 <div className="price-field">
@@ -227,6 +204,7 @@ export const Filter = ({
                     value={minPrice}
                     readOnly
                     onChange={(e) => setMinPrice(parseFloat(e.target.value))}
+                    style={{ marginLeft: "2px" }}
                   />
                 </div>
                 <div className="price-field">
@@ -237,6 +215,7 @@ export const Filter = ({
                     value={maxPrice}
                     readOnly
                     onChange={(e) => setMaxPrice(parseFloat(e.target.value))}
+                    style={{ marginLeft: "7px" }}
                   />
                 </div>
               </div>
@@ -265,13 +244,36 @@ export const Filter = ({
                 step="1"
               />
             </div>
+            <div style={{ marginLeft: "0px", marginTop: "15px", paddingBottom: "0px" }}>
+              <button className="w3-button w3-black" onClick={handlePriceRangeChange}>Застосувати</button>
+            </div>
           </div>
+        </div>
 
-          <div align="center">
-            <button className="w3-button w3-black" onClick={handlePriceRangeChange}>Застосувати</button>
-          </div>
+        <div style={{ paddingTop: "0" }}>
+          <h5 className="w3-bar-item sub-title">Магазини</h5>
+          {Array.isArray(shops) && shops.length > 0 ? (
+            <ul className="shop-list" style={{ paddingLeft: "10px" }}>
+              {shops.map((shop, index) => (
+                <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "4px", paddingTop: "4px" }}>
+                  <label className="custom-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedShops.includes(shop)}
+                      onChange={() => handleShopChange(shop)}
+                    />
+                    <span className="checkmark"></span>
+                    <span className="label-text">{shop}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Немає доступних магазинів</p>
+          )}
+        </div>
 
-          <div style={{ marginTop: "15px" }}>
+        <div style={{ marginTop: "15px" }}>
           <h5 className="w3-bar-item sub-title">Країни</h5>
           {Array.isArray(countries) && countries.length > 0 ? (
             <ul className="shop-list" style={{ paddingLeft: "10px" }}>
@@ -280,7 +282,7 @@ export const Filter = ({
                   <label className="custom-checkbox">
                     <input
                       type="checkbox"
-                      // checked={selectedCountries.includes(country)}
+                      checked={selectedCountries.includes(country)}
                       onChange={() => handleCountryChange(country)}
                     />
                     <span className="checkmark"></span>
@@ -292,7 +294,6 @@ export const Filter = ({
           ) : (
             <p>Немає доступних країн</p>
           )}
-        </div>
         </div>
       </div>
     </div>

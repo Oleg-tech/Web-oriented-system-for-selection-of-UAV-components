@@ -66,9 +66,6 @@ export const Search = () => {
     setCountryList(countries_list);
     setComponentsNumber(componentsNumber);
 
-    console.log("DATADATADATADATA = ", shopList);
-    console.log("DATADATADATADATA = ", countryList);
-
     let { min_price, max_price } = newData;
 
     if ( min_price && max_price) {
@@ -134,11 +131,21 @@ export const Search = () => {
   const downloadComponents = async () => {
     try {
       const allData = await fetchComponentsForFile();
-      console.log("Download data = ", allData);
+  
+      const headers = ["Назва", "Ціна, грн.", "Зображення", "Сторінка в магазині", "Магазин", "Країна"];
+      const data = [headers, ...allData.map(item => [
+        item.componentName,
+        item.componentPrice,
+        item.componentImageURL,
+        item.componentExternalURL,
+        item.componentShopName,
+        item.componentCountry
+      ])];
+  
       const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(allData);
+      const ws = XLSX.utils.aoa_to_sheet(data);
       XLSX.utils.book_append_sheet(wb, ws, 'Components');
-      XLSX.writeFile(wb, 'components.xlsx');
+      XLSX.writeFile(wb, `${query}-components.xlsx`);
     } catch (err) {
       console.error('Error:', err);
     }
