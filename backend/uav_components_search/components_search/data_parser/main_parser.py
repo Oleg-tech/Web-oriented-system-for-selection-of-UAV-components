@@ -46,7 +46,7 @@ def extract_price_integer(price_string):
     ...
 
 
-def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_obj, url_obj):
+def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_obj, url_obj, country):
     names, prices, pictures, urls = [], [], [], []
     global all_products
 
@@ -153,7 +153,8 @@ def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_ob
             "componentPrice": price,
             "componentImageURL": img,
             "componentExternalURL": url,
-            "componentShopName": shop_name
+            "componentShopName": shop_name,
+            "componentCountry": country
         })
 
     # all_products[shop_name] = shop_component_list
@@ -225,6 +226,8 @@ def main_parser(user_ip, query):
         pictures = source_data.get("picture_obj")
         urls = source_data.get("url_obj")
 
+        country = source_data.get("country")
+
         pagination_type = source_data.get("pagination_type")
 
         url = get_page_url(
@@ -265,7 +268,8 @@ def main_parser(user_ip, query):
                 name_obj=names,
                 price_obj=prices,
                 picture_obj=pictures,
-                url_obj=urls
+                url_obj=urls,
+                country=country
             )
 
             # Отримати посилання на наступну сторінку

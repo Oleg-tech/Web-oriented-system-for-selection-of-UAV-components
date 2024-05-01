@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
+import * as XLSX from 'xlsx';
 import { MDBInput, MDBBtn } from 'mdb-react-ui-kit';
-
-import { fetchProducts } from "./products";
+import { fetchProducts, fetchDownloadComponents } from "./products";
 import { getMinRangePrice, getMaxRangePrice } from "./calculatePrice";
-
 import { Product } from "./product";
 import { Pagination } from "./pagination";
 import { Filter } from "./filters";
@@ -35,9 +34,11 @@ export const Search = () => {
   const [query, setQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedShops, setSelectedShops] = useState([]);
+  const [selectedCountries, setSelectedCountries] = useState([]);
   
   const [searchResult, setSearchResult] = useState([]);
   const [shopList, setShopList] = useState([]);
+  const [countryList, setCountryList] = useState([]);
   const [componentsNumber, setComponentsNumber] = useState(0);
 
   // Фільтр ціни
@@ -49,6 +50,7 @@ export const Search = () => {
   // Сортування
   const [sorting, setSorting] = useState("");
 
+  // Скинути фільтри
   const [resetPage, setResetPage] = useState(false);
 
   console.log("Here query = ", query);
@@ -56,11 +58,12 @@ export const Search = () => {
   const handleDataUpdate = (newData) => {
     console.log("NewData = ", newData);
     console.log(typeof newData);
-    let { search_result, shop_list } = newData;
+    let { search_result, shop_list, countries_list } = newData;
     let componentsNumber = newData.count;
     setData(search_result);
     setSearchResult(search_result);
     setShopList(shop_list);
+    setCountryList(countries_list);
     setComponentsNumber(componentsNumber);
 
     let { min_price, max_price } = newData;
@@ -94,7 +97,7 @@ export const Search = () => {
     setIsLoading(true);
     try {
       const data = await fetchProducts(
-        query, currentPage, selectedShops, minBufRangePrice, maxBufRangePrice, sorting, resetPage
+        query, currentPage, selectedShops, selectedCountries, minBufRangePrice, maxBufRangePrice, sorting, resetPage
       );
       handleDataUpdate(data);
     } catch (err) {
@@ -110,7 +113,43 @@ export const Search = () => {
     if (query) {
       fetchData();
     }
-  }, [query, currentPage, selectedShops, minBufRangePrice, maxBufRangePrice, sorting]);
+  }, [query, currentPage, selectedShops, selectedCountries, minBufRangePrice, maxBufRangePrice, sorting]);
+
+  const fetchComponentsForFile = async () => {
+    try {
+      const downloadData = await fetchDownloadComponents(
+        query, currentPage, selectedShops, selectedCountries, minBufRangePrice, maxBufRangePrice, sorting
+      );
+      return downloadData;
+    } catch (err) {
+      setError(err);
+    } finally {
+      // return downloadData;
+    }
+  };
+
+  const downloadComponents = async () => {
+    try {
+      const allData = await fetchComponentsForFile();
+  
+      const headers = ["Назва", "Ціна, грн.", "Зображення", "Сторінка в магазині", "Магазин", "Країна"];
+      const data = [headers, ...allData.map(item => [
+        item.componentName,
+        item.componentPrice,
+        item.componentImageURL,
+        item.componentExternalURL,
+        item.componentShopName,
+        item.componentCountry
+      ])];
+  
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      XLSX.utils.book_append_sheet(wb, ws, 'Components');
+      XLSX.writeFile(wb, `${query}-components.xlsx`);
+    } catch (err) {
+      console.error('Error:', err);
+    }
+  };
 
   if (query === "") {
     return (
@@ -121,6 +160,9 @@ export const Search = () => {
             shops={shopList}
             selectedShops={selectedShops}
             setSelectedShops={setSelectedShops}
+            countries={countryList}
+            selectedCountries={selectedCountries}
+            setSelectedCountries={setSelectedCountries}
             setMinRangePrice={setMinRangePrice}
             setMaxRangePrice={setMaxRangePrice}
             minRangePrice={minRangePrice}
@@ -181,6 +223,9 @@ export const Search = () => {
           shops={shopList}
           selectedShops={selectedShops}
           setSelectedShops={setSelectedShops}
+          countries={countryList}
+          selectedCountries={selectedCountries}
+          setSelectedCountries={setSelectedCountries}
           setMinRangePrice={setMinRangePrice}
           setMaxRangePrice={setMaxRangePrice}
           minRangePrice={minRangePrice}
@@ -246,6 +291,9 @@ export const Search = () => {
           shops={shopList}
           selectedShops={selectedShops}
           setSelectedShops={setSelectedShops}
+          countries={countryList}
+          selectedCountries={selectedCountries}
+          setSelectedCountries={setSelectedCountries}
           setMinRangePrice={setMinRangePrice}
           setMaxRangePrice={setMaxRangePrice}
           minRangePrice={minRangePrice}
@@ -268,28 +316,40 @@ export const Search = () => {
           </MDBBtn>
         </div>
 
-        <div>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingLeft: "20px"
+        }}>
           <div className="product-count" style={{
             fontSize: '1.5rem',
             color: '#333',
             fontWeight: 'bold',
             textTransform: 'uppercase',
             letterSpacing: '1px',
-            marginLeft: '10px',
-            paddingTop: '15px',
-            float: 'left'
+            paddingTop: '15px'
           }}>
             Кількість знайдених комплектуючих: {componentsNumber}
           </div>
-          <div style={{ float: 'right' }}>
-            Показувати спочатку:
-            <select onChange={handleSortChange} className="form-select">
-              <option value="most_appropriate">Найбільш відповідні</option>
-              <option value="cheapest">Дешеві</option>
-              <option value="expensive">Дорогі</option>
-            </select>
+
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <button onClick={downloadComponents} style={{ border: 'none', background: 'none', marginRight: "50px", marginTop: "25px" }}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="30px" height="30px" fill="currentColor" className="bi bi-download" viewBox="0 0 16 16">
+                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708z"/>
+              </svg>
+            </button>
+
+            <div>
+              Показувати спочатку:
+              <select onChange={handleSortChange} className="form-select">
+                <option value="most_appropriate">-</option>
+                <option value="cheapest">Дешеві</option>
+                <option value="expensive">Дорогі</option>
+              </select>
+            </div>
           </div>
-          <div style={{ clear: 'both' }}></div>
         </div>
 
         {componentsNumber / componentsPerPage > 1 && (

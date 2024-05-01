@@ -8,6 +8,16 @@ def filter_by_shop_name(components, shop_names):
     return filtered_components
 
 
+def filter_by_country(components, countries):
+    countries = [country.lower() for country in countries.split(',')]
+
+    filtered_components = [
+        component for component in components if component['componentCountry'].lower() in countries
+    ]
+
+    return filtered_components
+
+
 def filter_by_price(components, min_price: float, max_price: float):
     filtered_components = []
 
@@ -48,11 +58,17 @@ def sort_components(components, sorting_by):
     return components
 
 
-def create_result_components_list(components, shop_filters, min_price_filter, max_price_filter, sorting):
+def create_result_components_list(components, shop_filters, countries_filters, min_price_filter, max_price_filter, sorting):
     if shop_filters:
         components = filter_by_shop_name(
             components=components,
             shop_names=shop_filters
+        )
+
+    if countries_filters:
+        components = filter_by_country(
+            components=components,
+            countries=countries_filters
         )
 
     if min_price_filter and max_price_filter:

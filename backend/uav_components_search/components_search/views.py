@@ -22,6 +22,11 @@ def extract_shops(components):
     return set(list_of_shops)
 
 
+def extract_countries(components):
+    list_of_countries = [component['componentCountry'] for component in components]
+    return set(list_of_countries)
+
+
 class FindComponentView(APIView):
     pagination_class = ComponentsResultPagination
 
@@ -29,6 +34,7 @@ class FindComponentView(APIView):
         query = request.data.get('query')
         all_filters = self.request.query_params.dict()
         shop_filters = all_filters.get('shops')
+        countries_filters = all_filters.get('countries')
         min_price_filter = all_filters.get('min_price')
         max_price_filter = all_filters.get('max_price')
         sorting = all_filters.get('sorting')
@@ -36,6 +42,7 @@ class FindComponentView(APIView):
         print("Query = ", query)
         print("All filters = ", all_filters)
         print("Shop filters = ", shop_filters)
+        print("Countries filters = ", countries_filters)
         print("Minimal price = ", min_price_filter)
         print("Maximal price = ", max_price_filter)
         print("Sorting = ", sorting)
@@ -60,10 +67,12 @@ class FindComponentView(APIView):
             print(min_price, max_price)
 
             shops = extract_shops(components)
+            countries = extract_countries(components)
 
             components = create_result_components_list(
                 components=components,
                 shop_filters=shop_filters,
+                countries_filters=countries_filters,
                 min_price_filter=min_price_filter,
                 max_price_filter=max_price_filter,
                 sorting=sorting
@@ -75,6 +84,7 @@ class FindComponentView(APIView):
                 queryset=components,
                 request=request,
                 shops=shops,
+                countries=countries,
                 min_price=min_price,
                 max_price=max_price
             )
@@ -97,10 +107,12 @@ class FindComponentView(APIView):
         print(min_price, max_price)
 
         shops = extract_shops(components=components)
+        countries = extract_countries(components=components)
 
         components = create_result_components_list(
             components=components,
             shop_filters=shop_filters,
+            countries_filters=countries_filters,
             min_price_filter=min_price_filter,
             max_price_filter=max_price_filter,
             sorting=sorting
@@ -112,9 +124,48 @@ class FindComponentView(APIView):
             queryset=components,
             request=request,
             shops=shops,
+            countries=countries,
             min_price=min_price,
             max_price=max_price
         )
         serializer = ComponentSerializer(result_page, many=True)
 
         return paginator.get_paginated_response(serializer.data)
+
+
+class DownloadComponentView(APIView):
+    def post(self, request, *args, **kwargs):
+        query = request.data.get('query')
+        all_filters = self.request.query_params.dict()
+        shop_filters = all_filters.get('shops')
+        countries_filters = all_filters.get('countries')
+        min_price_filter = all_filters.get('min_price')
+        max_price_filter = all_filters.get('max_price')
+        sorting = all_filters.get('sorting')
+
+        if not query:
+            return Response({'detail': 'Введіть товар для пошуку'}, status=status.HTTP_400_BAD_REQUEST)
+
+        redis_client = get_redis_connection()
+
+        # Перевірка наявності такого запиту протягом останніх 20 хвилин
+        query_recent_request = redis_client.get(query.strip())
+        if not query_recent_request:
+            return Response({'detail': 'Дані не знайдено'}, status=status.HTTP_400_BAD_REQUEST)
+
+        components = json.loads(query_recent_request)
+
+        components = create_result_components_list(
+            components=components,
+            shop_filters=shop_filters,
+            countries_filters=countries_filters,
+            min_price_filter=min_price_filter,
+            max_price_filter=max_price_filter,
+            sorting=sorting
+        )
+
+        print("Number of components 2 = ", len(components))
+
+        serializer = ComponentSerializer(components, many=True)
+
+        return Response(serializer.data)
