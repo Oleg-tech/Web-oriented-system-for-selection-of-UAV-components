@@ -6,6 +6,11 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.http import HttpResponse
+from django.contrib.auth import authenticate
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import SessionAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .data_parser.get_json_data import find_json_files_list, parse_json
 from .data_parser.main_parser import main_parser
@@ -285,11 +290,33 @@ def update_file(shop_url, new_file):
     return Response({"detail": "Shop updated successfully"})
 
 
-class AdminComponentFileView(APIView):
-    def get(self, request, *args, **kwargs):
-        shops = get_shops_data()
+class SuperUserLoginView(APIView):
+    def post(self, request):
+        username = request.data.get('username')
+        password = request.data.get('password')
 
-        return Response({"shops": shops})
+        user = authenticate(username=username, password=password)
+
+        if user is not None and user.is_superuser:
+            refresh = TokenObtainPairSerializer.get_token(user)
+            data = {
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }
+            return Response(data)
+        else:
+            return Response({'error': 'Invalid credentials or user is not a superuser'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class AdminComponentFileView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            shops = get_shops_data()
+            return Response({"shops": shops})
+        return Response({"detail": "Permission denied"})
 
     def post(self, request, *args, **kwargs):
         operation = request.data.get('operation')

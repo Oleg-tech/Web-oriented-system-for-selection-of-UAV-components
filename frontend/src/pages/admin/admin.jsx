@@ -1,12 +1,30 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { PrivateRoute } from './privateComp';
+
+import 'w3-css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'mdb-react-ui-kit/dist/css/mdb.min.css';
+
+axios.defaults.withCredentials = true;
 
 const fetchShopsData = async () => {
   const url = "http://127.0.0.1:8000/components/api/admin";
+  const accessToken = localStorage.getItem('accessToken');
 
   try {
-    const response = await axios.get(url);
+    const response = await axios.get(url, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`
+      }
+    });
     console.log("Admin data:\n", response.data);
+
+    if (response.status === 403) {
+      return null;
+    }
+    
     return response.data;
   } catch (error) {
     console.error('There was a problem with the fetch operation:', error);
@@ -16,6 +34,7 @@ const fetchShopsData = async () => {
 
 const downloadFile = async (shop_url) => {
   const url = "http://127.0.0.1:8000/components/api/admin";
+  const accessToken = localStorage.getItem('accessToken');
 
   const data = {
     "operation": "download",
@@ -23,7 +42,12 @@ const downloadFile = async (shop_url) => {
   };
 
   try {
-    const response = await axios.post(url, data);
+    const response = await axios.post(url, data, {
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      }
+    });
     return response.data;
   } catch (error) {
     console.error('There was a problem with the fetch operation:', error);
@@ -35,13 +59,19 @@ export const Admin = () => {
   const [shops, setShops] = useState([]);
   const [loading, setLoading] = useState(true);
   const [file, setFile] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const result = await fetchShopsData();
-        setShops(result.shops);
-        setLoading(false);
+
+        if (result === null) {
+          navigate('/login');
+        } else {
+          setShops(result.shops);
+          setLoading(false);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
         setLoading(false);
@@ -52,6 +82,7 @@ export const Admin = () => {
   }, []);
 
   const handleFileChange = async (e) => {
+    const accessToken = localStorage.getItem('accessToken');
     const selectedFile = e.target.files[0];
     setFile(selectedFile);
 
@@ -60,9 +91,11 @@ export const Admin = () => {
       formData.append('file', selectedFile);
       formData.append('operation', 'add');
       formData.append('filename', selectedFile.name);
+      const accessToken = localStorage.getItem('accessToken');
 
       const response = await axios.post("http://127.0.0.1:8000/components/api/admin", formData, {
         headers: {
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'multipart/form-data'
         }
       });
@@ -96,8 +129,8 @@ export const Admin = () => {
 
   const handleSendFile = async (e, base_url) => {
     try {
+      const accessToken = localStorage.getItem('accessToken');
       const file = e.target.files[0];
-      console.log("Shiop url 2 = ", base_url);
 
       if (!file) {
         console.error('No file selected');
@@ -113,6 +146,7 @@ export const Admin = () => {
   
       const response = await axios.post(url, formData, {
         headers: {
+          'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'multipart/form-data'
         }
       });
@@ -130,8 +164,14 @@ export const Admin = () => {
         "shop_url": shop_url
       };
       
+      const accessToken = localStorage.getItem('accessToken');
+
       const url = "http://127.0.0.1:8000/components/api/admin";
-      const response = await axios.post(url, data);
+      const response = await axios.post(url, data, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
       console.log("Файл успішно видалений", response.data);
     } catch (error) {
       console.error('Error deleting file:', error);
@@ -139,6 +179,7 @@ export const Admin = () => {
   };
 
   return (
+    <PrivateRoute>
     <div className="container" style={{ paddingTop: "20px" }}>
       {loading ? (
         <div>Loading...</div>
@@ -151,7 +192,7 @@ export const Admin = () => {
         </div>
 
         <table className="table">
-          <thead>
+          <thead className="thead-dark">
             <tr>
               <th scope="col">Назва</th>
               <th scope="col">Посилання</th>
@@ -161,7 +202,7 @@ export const Admin = () => {
               <th scope="col">Видалити</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody className="thead-light">
             {shops.map(shop => (
               <tr key={shop.name}>
                 <td>{shop.name}</td>
@@ -194,6 +235,7 @@ export const Admin = () => {
         </div>
       )}
     </div>
+    </PrivateRoute>
   );
 };
 
