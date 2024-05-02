@@ -21,6 +21,40 @@ def filter_by_country(components, countries):
     return filtered_components
 
 
+def filter_by_company(components, companies):
+    companies = [company.lower() for company in companies.split(',')]
+
+    filtered_components = [
+        component for component in components if component.get('company') and component['company'].lower() in companies
+    ]
+
+    return filtered_components
+
+
+def filter_by_parameter(components, parameters):
+    filtered_components = []
+
+    # {'Поле огляду': ['112°', '155°'], 'Формат екрана': ['4:3/16:9']}
+    for component in components:
+        if component.get('parameters'):
+            component_parameters = component['parameters']
+            match = True
+
+            for parameter, values in parameters.items():
+                if parameter in component_parameters:
+                    if component_parameters[parameter] not in values:
+                        match = False
+                        break
+                else:
+                    match = False
+                    break
+
+            if match:
+                filtered_components.append(component)
+
+    return filtered_components
+
+
 def filter_by_price(components, min_price: float, max_price: float):
     filtered_components = []
 
@@ -61,7 +95,7 @@ def sort_components(components, sorting_by):
     return components
 
 
-def create_result_components_list(components, shop_filters, countries_filters, min_price_filter, max_price_filter, sorting):
+def create_result_components_list(components, shop_filters, countries_filters, companies_filters, parameters_filters, min_price_filter, max_price_filter, sorting):
     if shop_filters:
         components = filter_by_shop_name(
             components=components,
@@ -72,6 +106,18 @@ def create_result_components_list(components, shop_filters, countries_filters, m
         components = filter_by_country(
             components=components,
             countries=countries_filters
+        )
+
+    if companies_filters:
+        components = filter_by_company(
+            components=components,
+            companies=companies_filters
+        )
+
+    if parameters_filters:
+        components = filter_by_parameter(
+            components=components,
+            parameters=parameters_filters
         )
 
     if min_price_filter and max_price_filter:

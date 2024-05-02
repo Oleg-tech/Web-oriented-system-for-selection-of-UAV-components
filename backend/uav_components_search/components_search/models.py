@@ -14,3 +14,10 @@ class Currency(models.Model):
     currency_name = models.CharField(max_length=100, null=False, blank=False)
     current_rate = models.FloatField()
     last_updated_at = models.DateTimeField(default=None, editable=True)
+
+
+class Component(models.Model):
+    component_name = models.CharField(max_length=100, null=False, blank=False)
+    component_company = models.CharField(max_length=100, null=False, blank=False)
+    component_type = models.CharField(max_length=50, null=False, blank=False)
+    component_parameters = models.JSONField(null=False, blank=False)

@@ -8,3 +8,5 @@ class ComponentSerializer(serializers.Serializer):
     componentExternalURL = serializers.URLField()
     componentShopName = serializers.CharField()
     componentCountry = serializers.CharField(default=None)
+    company = serializers.CharField(default=None)
+    parameters = serializers.CharField(default=None)

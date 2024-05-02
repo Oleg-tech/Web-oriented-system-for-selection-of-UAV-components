@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Shop, Currency
+from .models import Shop, Currency, Component
 
 
 class ShopAdmin(admin.ModelAdmin):
@@ -17,5 +17,13 @@ class CurrencyAdmin(admin.ModelAdmin):
     list_display_links = ['currency_acronym']
 
 
+class ComponentAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'component_name', 'component_company', 'component_type', 'component_parameters'
+    ]
+    list_display_links = ['component_name']
+
+
 admin.site.register(Shop, ShopAdmin)
 admin.site.register(Currency, CurrencyAdmin)
+admin.site.register(Component, ComponentAdmin)

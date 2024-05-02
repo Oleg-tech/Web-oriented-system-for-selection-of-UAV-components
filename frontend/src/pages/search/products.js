@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-export const fetchProducts = async (query, page, filtered_shops, filtered_countries, min_range_price, max_range_price, sorting, reset_page) => {
+export const fetchProducts = async (query, page, filtered_shops, filtered_countries, filtered_companies, selected_parameters, min_range_price, max_range_price, sorting, reset_page) => {
     console.log("Query = ", query);
 
     if (reset_page) {
@@ -15,11 +15,16 @@ export const fetchProducts = async (query, page, filtered_shops, filtered_countr
         url = `http://127.0.0.1:8000/components/api/search/?page=${page}`;
     }
 
-    console.log("filtered countries = ", filtered_countries);
     if (filtered_countries) {
       const countriesQuery = filtered_countries.join(',');
       url += `&countries=${countriesQuery}`;
-      console.log("countries = ", countriesQuery);
+      // console.log("countries = ", countriesQuery);
+    }
+
+    if (filtered_companies) {
+      const companiesQuery = filtered_companies.join(',');
+      url += `&companies=${companiesQuery}`;
+      console.log("companies = ", companiesQuery);
     }
 
     if (min_range_price && max_range_price) {
@@ -29,7 +34,10 @@ export const fetchProducts = async (query, page, filtered_shops, filtered_countr
       url += `&sorting=${sorting}`;
     }
 
-    const data = { "query": query };
+    const data = { 
+      "query": query,
+      "parameters": selected_parameters
+    };
   
     try {
       const response = await axios.post(url, data);

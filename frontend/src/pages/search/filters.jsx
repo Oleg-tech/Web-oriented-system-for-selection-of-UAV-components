@@ -3,10 +3,13 @@ import "./price-range-filter.css";
 import "./checkbox.css";
 
 export const Filter = ({
-    query, shops, selectedShops, setSelectedShops,
+    query, 
+    shops, selectedShops, setSelectedShops,
     countries, selectedCountries, setSelectedCountries,
     setMinRangePrice, setMaxRangePrice,
-    minRangePrice, maxRangePrice, setMinBufRangePrice, setMaxBufRangePrice, setResetPage
+    minRangePrice, maxRangePrice, setMinBufRangePrice, setMaxBufRangePrice, setResetPage, 
+    companies, selectedCompanies, setSelectedCompanies,
+    parameters, selectedParameters, setSelectedParameters
   }) => {
   const [isFixed, setIsFixed] = useState(false);
   const sidebarRef = useRef(null);
@@ -148,29 +151,57 @@ export const Filter = ({
     } else {
       setSelectedCountries([...selectedCountries, country]);
     }
-    console.log("Country = ", country);
-    console.log("Selected countries = ", selectedCountries);
+    // console.log("Selected countries = ", selectedCountries);
+  };
+
+  const handleCompanyChange = (company) => {
+    setResetPage(true);
+    
+    if (selectedCompanies.includes(company)) {
+      setSelectedCompanies(selectedCompanies.filter((s) => s !== company));
+    } else {
+      setSelectedCompanies([...selectedCompanies, company]);
+    }
+    console.log("Selected companies = ", selectedCompanies);
+  };
+
+  const handleParameterChange = (param, value) => {
+    if (selectedParameters.hasOwnProperty(param)) {
+      if (selectedParameters[param].includes(value)) {
+        const updatedValues = selectedParameters[param].filter(v => v !== value);
+        setSelectedParameters({
+          ...selectedParameters,
+          [param]: updatedValues
+        });
+      } else {
+        setSelectedParameters({
+          ...selectedParameters,
+          [param]: [...selectedParameters[param], value]
+        });
+      }
+    } else {
+      setSelectedParameters({
+        ...selectedParameters,
+        [param]: [value]
+      });
+    }
+    
+    console.log("Selected parameters =", selectedParameters);
   };
 
   // Обробка зміни інтервалу цін
   const handlePriceRangeChange = () => {
-    // console.log("\n\nMin range = ", minPrice);
-    // console.log("Max range = ", maxPrice);
-
     setMinRangePrice(minPrice);
     setMaxRangePrice(maxPrice);
     setMinBufRangePrice(minPrice);
     setMaxBufRangePrice(maxPrice);
   };
 
-  // console.log("MinP: ", minPrice, " != ", minRangePrice);
-  // console.log("MaxP: ", maxPrice, " != ", maxRangePrice);
-
   // Обробка зкидання фільтрів
   const handleFilterReset = () => {
-    // console.log("Reset");
     setSelectedShops([]);
     setSelectedCountries([]);
+    setSelectedCompanies([]);
     setMinBufRangePrice(null);
     setMaxBufRangePrice(null);
   };
@@ -295,6 +326,53 @@ export const Filter = ({
             <p>Немає доступних країн</p>
           )}
         </div>
+
+        <div style={{ marginTop: "15px" }}>
+          <h5 className="w3-bar-item sub-title">Виробники</h5>
+          {Array.isArray(companies) && companies.length > 0 ? (
+            <ul className="shop-list" style={{ paddingLeft: "10px" }}>
+              {companies.map((company, index) => (
+                <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "4px", paddingTop: "4px" }}>
+                  <label className="custom-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={selectedCompanies.includes(company)}
+                      onChange={() => handleCompanyChange(company)}
+                    />
+                    <span className="checkmark"></span>
+                    <span className="label-text">{company}</span>
+                  </label>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>Немає доступних виробників</p>
+          )}
+        </div>
+
+        {Object.entries(parameters).map(([param, values]) => (
+          <div style={{ marginTop: "15px" }} key={param}>
+            <h5 className="w3-bar-item sub-title">{param}</h5>
+            {Array.isArray(values) && values.length > 0 ? (
+              <ul className="shop-list" style={{ paddingLeft: "10px" }}>
+                {values.map((value, index) => (
+                  <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "4px", paddingTop: "4px" }}>
+                    <label className="custom-checkbox">
+                      <input
+                        type="checkbox"
+                        checked={selectedParameters[param] ? selectedParameters[param].includes(value) : false}
+                        onChange={() => handleParameterChange(param, value)}
+                      />
+                      <span className="checkmark"></span>
+                      <span className="label-text">{value}</span>
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+          </div>
+        ))}
+
       </div>
     </div>
   );

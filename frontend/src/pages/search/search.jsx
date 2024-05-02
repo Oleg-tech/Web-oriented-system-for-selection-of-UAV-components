@@ -33,12 +33,19 @@ export const Search = () => {
   const [error, setError] = useState(null);
   const [query, setQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
   const [selectedShops, setSelectedShops] = useState([]);
   const [selectedCountries, setSelectedCountries] = useState([]);
+  const [selectedCompanies, setSelectedCompanies] = useState([]);
+  const [selectedParameters, setSelectedParameters] = useState({});
   
   const [searchResult, setSearchResult] = useState([]);
+
   const [shopList, setShopList] = useState([]);
   const [countryList, setCountryList] = useState([]);
+  const [companiesList, setCompaniesList] = useState([]);
+  const [parametersList, setParametersList] = useState({});
+
   const [componentsNumber, setComponentsNumber] = useState(0);
 
   // Фільтр ціни
@@ -58,13 +65,15 @@ export const Search = () => {
   const handleDataUpdate = (newData) => {
     console.log("NewData = ", newData);
     console.log(typeof newData);
-    let { search_result, shop_list, countries_list } = newData;
+    let { search_result, shop_list, countries_list, companies_list, parameters_dict } = newData;
     let componentsNumber = newData.count;
     setData(search_result);
     setSearchResult(search_result);
     setShopList(shop_list);
     setCountryList(countries_list);
     setComponentsNumber(componentsNumber);
+    setCompaniesList(companies_list);
+    setParametersList(parameters_dict);
 
     let { min_price, max_price } = newData;
 
@@ -97,7 +106,7 @@ export const Search = () => {
     setIsLoading(true);
     try {
       const data = await fetchProducts(
-        query, currentPage, selectedShops, selectedCountries, minBufRangePrice, maxBufRangePrice, sorting, resetPage
+        query, currentPage, selectedShops, selectedCountries, selectedCompanies, selectedParameters, minBufRangePrice, maxBufRangePrice, sorting, resetPage
       );
       handleDataUpdate(data);
     } catch (err) {
@@ -113,12 +122,12 @@ export const Search = () => {
     if (query) {
       fetchData();
     }
-  }, [query, currentPage, selectedShops, selectedCountries, minBufRangePrice, maxBufRangePrice, sorting]);
+  }, [query, currentPage, selectedShops, selectedCountries, selectedCompanies, selectedParameters, minBufRangePrice, maxBufRangePrice, sorting]);
 
   const fetchComponentsForFile = async () => {
     try {
       const downloadData = await fetchDownloadComponents(
-        query, currentPage, selectedShops, selectedCountries, minBufRangePrice, maxBufRangePrice, sorting
+        query, currentPage, selectedShops, selectedCountries, selectedCompanies, minBufRangePrice, maxBufRangePrice, sorting
       );
       return downloadData;
     } catch (err) {
@@ -169,6 +178,13 @@ export const Search = () => {
             maxRangePrice={maxRangePrice}
             setMinBufRangePrice={setMinBufRangePrice}
             setMaxBufRangePrice={setMaxBufRangePrice}
+            setResetPage={setResetPage}
+            companies={companiesList}
+            selectedCompanies={selectedCompanies}
+            setSelectedCompanies={setSelectedCompanies}
+            parameters={parametersList}
+            selectedParameters={selectedParameters}
+            setSelectedParameters={setSelectedParameters}
           />
         </div>
 
@@ -232,6 +248,13 @@ export const Search = () => {
           maxRangePrice={maxRangePrice}
           setMinBufRangePrice={setMinBufRangePrice}
           setMaxBufRangePrice={setMaxBufRangePrice}
+          setResetPage={setResetPage}
+          companies={companiesList}
+          selectedCompanies={selectedCompanies}
+          setSelectedCompanies={setSelectedCompanies}
+          parameters={parametersList}
+          selectedParameters={selectedParameters}
+          setSelectedParameters={setSelectedParameters}
         />
       </div>
 
@@ -301,6 +324,12 @@ export const Search = () => {
           setMinBufRangePrice={setMinBufRangePrice}
           setMaxBufRangePrice={setMaxBufRangePrice}
           setResetPage={setResetPage}
+          companies={companiesList}
+          selectedCompanies={selectedCompanies}
+          setSelectedCompanies={setSelectedCompanies}
+          parameters={parametersList}
+          selectedParameters={selectedParameters}
+          setSelectedParameters={setSelectedParameters}
         />
       </div>
 

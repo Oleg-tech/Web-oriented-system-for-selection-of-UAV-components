@@ -8,15 +8,16 @@ from rest_framework import status
 from django.http import HttpResponse
 from django.contrib.auth import authenticate
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.authentication import SessionAuthentication
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .data_parser.get_json_data import find_json_files_list, parse_json
-from .data_parser.main_parser import main_parser
 from .data_parser.asyncio_main_parser import asyncio_main_parser
 from .data_parser.remove_inappropriate import remove_inappropriate_components
-from .utils import get_user_ip
+from .utils import (
+    get_user_ip, extract_shops, extract_countries, get_shops_data,
+    extract_shop_json, insert_parameters, extract_companies, extract_parameters
+)
 from .services import get_redis_connection
 from .api.pagination import ComponentsResultPagination
 from .api.serializers import ComponentSerializer
@@ -28,18 +29,14 @@ def index(request):
     return HttpResponse("Hello, world. You're at the polls index.")
 
 
-def fill_countries(components):
-    ...
+def extract_parameter_filters(parameters):
+    new_parameters = {}
 
+    for key, value in parameters.items():
+        if value:
+            new_parameters[key] = value
 
-def extract_shops(components):
-    list_of_shops = [component['componentShopName'] for component in components]
-    return set(list_of_shops)
-
-
-def extract_countries(components):
-    list_of_countries = [component.get('componentCountry') for component in components]
-    return set(list_of_countries)
+    return new_parameters
 
 
 def run_asyncio_main_parser(user_ip, query):
@@ -59,6 +56,8 @@ class FindComponentView(APIView):
         all_filters = self.request.query_params.dict()
         shop_filters = all_filters.get('shops')
         countries_filters = all_filters.get('countries')
+        companies_filters = all_filters.get('companies')
+        parameters_filters = extract_parameter_filters(parameters=request.data.get('parameters'))
         min_price_filter = all_filters.get('min_price')
         max_price_filter = all_filters.get('max_price')
         sorting = all_filters.get('sorting')
@@ -67,6 +66,7 @@ class FindComponentView(APIView):
         print("All filters = ", all_filters)
         print("Shop filters = ", shop_filters)
         print("Countries filters = ", countries_filters)
+        print("Parameters filters = ", parameters_filters)
         print("Minimal price = ", min_price_filter)
         print("Maximal price = ", max_price_filter)
         print("Sorting = ", sorting)
@@ -90,13 +90,17 @@ class FindComponentView(APIView):
             min_price, max_price = get_min_and_max(components=components)
             print(min_price, max_price)
 
-            shops = extract_shops(components)
-            countries = extract_countries(components)
+            shops = extract_shops(components=components)
+            countries = extract_countries(components=components)
+            companies = extract_companies(components=components)
+            parameters = extract_parameters(components=components)
 
             components = create_result_components_list(
                 components=components,
                 shop_filters=shop_filters,
                 countries_filters=countries_filters,
+                companies_filters=companies_filters,
+                parameters_filters=parameters_filters,
                 min_price_filter=min_price_filter,
                 max_price_filter=max_price_filter,
                 sorting=sorting
@@ -109,6 +113,8 @@ class FindComponentView(APIView):
                 request=request,
                 shops=shops,
                 countries=countries,
+                companies=companies,
+                parameters=parameters,
                 min_price=min_price,
                 max_price=max_price
             )
@@ -135,6 +141,11 @@ class FindComponentView(APIView):
             components=components
         )
 
+        # Додати додаткові параметри для фільтрів
+        components = insert_parameters(
+            components=components
+        )
+
         # Зберегти результат запиту в Redis
         redis_client = get_redis_connection()
         redis_key = f"{query}"
@@ -146,11 +157,15 @@ class FindComponentView(APIView):
 
         shops = extract_shops(components=components)
         countries = extract_countries(components=components)
+        companies = extract_companies(components=components)
+        parameters = extract_parameters(components=components)
 
         components = create_result_components_list(
             components=components,
             shop_filters=shop_filters,
             countries_filters=countries_filters,
+            companies_filters=companies_filters,
+            parameters_filters=parameters_filters,
             min_price_filter=min_price_filter,
             max_price_filter=max_price_filter,
             sorting=sorting
@@ -163,6 +178,8 @@ class FindComponentView(APIView):
             request=request,
             shops=shops,
             countries=countries,
+            companies=companies,
+            parameters=parameters,
             min_price=min_price,
             max_price=max_price
         )
@@ -177,6 +194,8 @@ class DownloadComponentView(APIView):
         all_filters = self.request.query_params.dict()
         shop_filters = all_filters.get('shops')
         countries_filters = all_filters.get('countries')
+        companies_filters = all_filters.get('companies')
+        parameters_filters = request.data.get('parameters')
         min_price_filter = all_filters.get('min_price')
         max_price_filter = all_filters.get('max_price')
         sorting = all_filters.get('sorting')
@@ -197,6 +216,8 @@ class DownloadComponentView(APIView):
             components=components,
             shop_filters=shop_filters,
             countries_filters=countries_filters,
+            companies_filters=companies_filters,
+            parameters_filters=parameters_filters,
             min_price_filter=min_price_filter,
             max_price_filter=max_price_filter,
             sorting=sorting
@@ -207,42 +228,6 @@ class DownloadComponentView(APIView):
         serializer = ComponentSerializer(components, many=True)
 
         return Response(serializer.data)
-
-
-def get_shops_data():
-    shops_data = []
-    json_files = find_json_files_list()
-
-    for json_file in json_files:
-        try:
-            extracted_data = parse_json(json_file)
-            shops_data.append(
-                {
-                    "name": extracted_data["shop_name"],
-                    "base_url": extracted_data["base_url"],
-                    "country": extracted_data["country"]
-                }
-            )
-        except Exception as ex:
-            print("Error with extracting data from json file:\n", ex)
-
-    return shops_data
-
-
-def extract_shop_json(shop_url):
-    json_files = find_json_files_list()
-
-    for json_file in json_files:
-        extracted_data = parse_json(json_file)
-        if extracted_data["base_url"] == shop_url:
-            data = {
-                "file_name": json_file.split('\\')[-1],
-                "data": extracted_data
-            }
-
-            return data
-
-    return None
 
 
 def delete_shop(shop_url):

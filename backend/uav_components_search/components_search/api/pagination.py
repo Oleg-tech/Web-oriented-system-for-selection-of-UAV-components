@@ -9,6 +9,8 @@ class ComponentsResultPagination(PageNumberPagination):
     countries = None
     min_price = None
     max_price = None
+    companies = None
+    parameters = None
 
     def get_paginated_response(self, data):
         return Response({
@@ -19,14 +21,22 @@ class ComponentsResultPagination(PageNumberPagination):
             'search_result': data,
             'shop_list': self.shops or [],
             'countries_list': self.countries or [],
+            'companies_list': self.companies or [],
+            'parameters_dict': self.parameters or {},
             'min_price': str(self.min_price) or None,
             'max_price': str(self.max_price) or None
         })
 
-    def paginate_queryset(self, queryset, request, view=None, shops=None, countries=None, min_price=None, max_price=None):
+    def paginate_queryset(
+            self, queryset, request, view=None,
+            shops=None, countries=None, companies=None,
+            parameters=None, min_price=None, max_price=None
+    ):
         self.shops = shops
         self.countries = countries
         self.min_price = min_price
         self.max_price = max_price
+        self.companies = companies
+        self.parameters = parameters
 
         return super().paginate_queryset(queryset, request, view)
