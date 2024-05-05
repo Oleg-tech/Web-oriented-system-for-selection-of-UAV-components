@@ -23,7 +23,7 @@ def extract_price(price_str, pattern, has_price_interval, separator, currency):
         # separator = separator.encode('cp1251').decode('cp1251')
         # print("Decoded =", price_str)
 
-        parts = [price_str]
+        parts = [price_str.replace('\xa0', '')]
         if separator and price_str.find(separator):
             print("Separator = ", separator)
             parts = price_str.replace('\xa0', '').split(separator)
@@ -61,6 +61,6 @@ def extract_price(price_str, pattern, has_price_interval, separator, currency):
 
             # return [interval_price_1, interval_price_2]
             return f"{interval_price_1} - {interval_price_2}"
-    except:
-        print("HERE")
+    except Exception as ex:
+        print("Error happened while converting the price:\n", ex)
         return price_str

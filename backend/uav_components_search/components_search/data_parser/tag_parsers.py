@@ -54,7 +54,7 @@ def parse_tag_element(tag_object, data_source):
     if data_source == "text":
         tag_object = parse_text(tag_object)
         return tag_object
-    if data_source in ("src", "href", "onmouseover", "alt"):
+    if data_source in ("src", "href", "onmouseover", "alt", "data-src"):
         tag_object = tag_object[data_source]
         return tag_object
 

@@ -43,6 +43,8 @@ def get_product_data(product_objects, shop_name, name_obj, price_obj, picture_ob
     price_separator = price_obj.get("separator")
     price_currency = price_obj.get("currency")
 
+    print("Product objects: ", product_objects)
+
     for product_obj in product_objects:
         try:
             name_object = product_obj.find(

@@ -14,6 +14,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .data_parser.get_json_data import find_json_files_list, parse_json
 from .data_parser.asyncio_main_parser import asyncio_main_parser
 from .data_parser.remove_inappropriate import remove_inappropriate_components
+from .models import Component
 from .utils import (
     get_user_ip, extract_shops, extract_countries, get_shops_data,
     extract_shop_json, insert_parameters, extract_companies, extract_parameters
@@ -32,9 +33,10 @@ def index(request):
 def extract_parameter_filters(parameters):
     new_parameters = {}
 
-    for key, value in parameters.items():
-        if value:
-            new_parameters[key] = value
+    if parameters:
+        for key, value in parameters.items():
+            if value:
+                new_parameters[key] = value
 
     return new_parameters
 
@@ -52,7 +54,7 @@ class FindComponentView(APIView):
     pagination_class = ComponentsResultPagination
 
     def post(self, request, *args, **kwargs):
-        query = request.data.get('query')
+        query = request.data.get('query').lower()
         all_filters = self.request.query_params.dict()
         shop_filters = all_filters.get('shops')
         countries_filters = all_filters.get('countries')
@@ -344,3 +346,142 @@ class AdminComponentFileView(APIView):
             )
 
         return Response({"shops": 1})
+
+
+category_names = {
+    "Motor": "Мотори",
+    "Propellers": "Пропелери",
+    "Flight controller": "Контроллери польотів",
+    "Battery": "Акумулятори",
+    "Camera": "Камери",
+    "Antenna": "Антени",
+    "Frame": "Каркаси",
+    "Control panel": "Пульти керування",
+    "Navigation module": "Навігаційні модулі"
+}
+
+category_query = {
+    "Motor": ["мотор"],
+    "Propellers": ["пропелери"],
+    "Flight controller": ["Контроллери польотів"],
+    "Battery": ["акумулятор"],
+    "Camera": ["камера"],
+    "Antenna": ["антена"],
+    "Frame": ["каркас"],
+    "Control panel": ["Пульти керування"],
+    "Navigation module": ["Навігаційні модулі"],
+    "Kit": "набори"
+}
+
+
+class FindByCategoryView(APIView):
+    def post(self, request, *args, **kwargs):
+        category_name = request.data.get('category')
+
+        all_filters = self.request.query_params.dict()
+        shop_filters = all_filters.get('shops')
+        countries_filters = all_filters.get('countries')
+        companies_filters = all_filters.get('companies')
+        parameters_filters = extract_parameter_filters(parameters=request.data.get('parameters'))
+        min_price_filter = all_filters.get('min_price')
+        max_price_filter = all_filters.get('max_price')
+        sorting = all_filters.get('sorting')
+
+        print("Category = ", category_name)
+        print("All filters = ", all_filters)
+        print("Shop filters = ", shop_filters)
+        print("Countries filters = ", countries_filters)
+        print("Parameters filters = ", parameters_filters)
+        print("Minimal price = ", min_price_filter)
+        print("Maximal price = ", max_price_filter)
+        print("Sorting = ", sorting)
+
+        if not category_name:
+            return Response({'detail': 'Виберіть категорію для пошуку'}, status=status.HTTP_400_BAD_REQUEST)
+
+        redis_client = get_redis_connection()
+
+        query_recent_request = redis_client.get(f"{category_name}_CATEGORY")
+        if query_recent_request:
+            result_components = json.loads(query_recent_request)
+
+            shops = extract_shops(components=result_components)
+            countries = extract_countries(components=result_components)
+            companies = extract_companies(components=result_components)
+            parameters = extract_parameters(components=result_components)
+
+            result_components = create_result_components_list(
+                components=result_components,
+                shop_filters=shop_filters,
+                countries_filters=countries_filters,
+                companies_filters=companies_filters,
+                parameters_filters=parameters_filters,
+                min_price_filter=min_price_filter,
+                max_price_filter=max_price_filter,
+                sorting=sorting
+            )
+
+            serializer = ComponentSerializer(result_components, many=True)
+            return Response({
+                "data": serializer.data,
+                "components_number": len(serializer.data),
+                "category_name": category_names[category_name],
+                "shops": shops,
+                "countries": countries,
+                "companies": companies,
+                "parameters": parameters
+            })
+
+        else:
+            user_ip = get_user_ip(request)
+            result_components = []
+
+            for component_name in category_query[category_name]:
+                with concurrent.futures.ThreadPoolExecutor() as executor:
+                    future = executor.submit(run_asyncio_main_parser, user_ip, component_name)
+                    components = future.result()
+
+                for new_component in components:
+                    result_components.append(new_component)
+
+            result_components = insert_parameters(
+                components=result_components
+            )
+
+            # Зберегти результат запиту в Redis
+            redis_client = get_redis_connection()
+            redis_key = f"{category_name}_CATEGORY"
+            redis_value = json.dumps(result_components)
+            redis_client.set(redis_key, redis_value, ex=60 * 270)
+
+            shops = extract_shops(components=result_components)
+            countries = extract_countries(components=result_components)
+            companies = extract_companies(components=result_components)
+            parameters = extract_parameters(components=result_components)
+
+            print("Shops = ", shops)
+            print("Countries = ", countries)
+            print("Companies = ", companies)
+            print("Parameters = ", parameters)
+
+            result_components = create_result_components_list(
+                components=result_components,
+                shop_filters=shop_filters,
+                countries_filters=countries_filters,
+                companies_filters=companies_filters,
+                parameters_filters=parameters_filters,
+                min_price_filter=min_price_filter,
+                max_price_filter=max_price_filter,
+                sorting=sorting
+            )
+
+            serializer = ComponentSerializer(result_components, many=True)
+            return Response({
+                "data": serializer.data,
+                "components_number": len(serializer.data),
+                "category_name": category_names[category_name],
+                "shops": shops,
+                "countries": countries,
+                "companies": companies,
+                "parameters": parameters
+            })
