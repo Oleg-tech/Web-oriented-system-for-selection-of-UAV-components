@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
-import { MDBInput, MDBBtn } from 'mdb-react-ui-kit';
+import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Product } from './product';
 import { ProductShop } from './productShop';
 
@@ -8,6 +7,65 @@ import 'w3-css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 
+
+const ComponentList = () => {
+    return (
+        <div className="component-list" style={{ width:"80%", paddingLeft: "120px" }}>
+            <h3><a href="https://youtu.be/75SbiwqW7DM?si=3QH5_ZYiWzLsHX2-">Посилання на відеоінструкцію зі збірки</a></h3>
+            <h3><a href="https://youtu.be/NlzVfn5iKSE?si=h6mNHYuAVqZKObLP">Посилання на відеоінструкцію для налаштування</a></h3>
+
+            <h3>Необхідні деталі та кріплення</h3>
+            <ul>
+                <li>Ремінець для кріплення батареї. Для більшості Li-ion добре підійде 30см</li>
+                <li>5pcs iFlight 20x300mm FPV Belt Iron buckle</li>
+                <li>YSIDO Tape Nylon Lipo Strap Belt є різні розміри</li>
+                <li>Для кріплення VTX як на відео потрібно 4 гвинтики М3х12 і для них 4 гайки М3. Або відеопередавач можна стяжками прикріпити.</li>
+                <li>Демферні гумки для польотника чи регулятора</li>
+                <li>Силіконові шайби для регулювання висоти стеку</li>
+                <li>Запасні гайки для пропів Обирайте М5</li>
+                <li>Гайки для пропелерів від EMAX</li>
+                <li>Маленькі гвинтики (сталеві)</li>
+                <li>Пластикові гвинти</li>
+                <li>Сталеві гайки</li>
+                <li>Пластикові гвинти</li>
+                <li>Пластикові гайки</li>
+                <li>Пластикові проставки М3 (в збірці я не використовував але деякі VTX зручно кріпити через проставки)</li>
+                <li>Пластикові шайби різних розмірів</li>
+                <li>Захисна оплітка (6мм) можна обійтись без неї</li>
+            </ul>
+            <h3>Необхідні інструменти</h3>
+            <ul>
+                <li>Паяльник</li>
+                <li>Стружка для чистки паяльника в корпусі. Окремо стружка</li>
+                <li>Пінцет</li>
+                <li>Екструдер для флюсу</li>
+                <li>Лоток для гвинтів</li>
+                <li>Припій</li>
+                <li>Набір екстракторів для злизаних гвинтів</li>
+            </ul>
+        </div>
+    );
+};
+
+const ComponentList3 = () => {
+    return (
+        <div className="component-list" style={{ width:"80%", paddingLeft: "120px" }}>
+            <h3><a href="https://youtu.be/NlzVfn5iKSE?si=h6mNHYuAVqZKObLP">Посилання на відеоінструкцію для налаштування</a></h3>
+
+            <h3>Опис</h3>
+            <ul>
+                <li>1. Рама карбонова FH 7 дюймов (6 мм)</li>
+                <li>2. Політний контролер SpeedyBee F405 V3</li>
+                <li>3. Безколекторний електро двигун FH2807-KV1300</li>
+                <li>4. Повітряні гвинт GemFan 7040 (7/4/3)</li>
+                <li>5. Камера Caddx Ratel Pro 1500TVL</li>
+                <li>6. Приймач FH дальньої дії ELRS 915 МГц RX</li>
+                <li>7. Передавач відео Akk FX Dominator 5.8 ГГц 2000 мВт VTX</li>
+                <li>8. Антена FH Lollipop Cherry 5.8 ГГц</li>
+            </ul>
+        </div>
+    );
+};
 
 const list1 = [
     {
@@ -111,6 +169,7 @@ const list1 = [
     }
 ]
 
+
 const list2 = [
     {
         "componentName": "Літак Heewing T2 Cruza PNP (Grey)",
@@ -143,10 +202,7 @@ const list2 = [
         "componentExternalURL": "https://www.moyo.ua/geksakopter_yuneec_h850_rtf_rtk_t1_2_acc_transportnyy_keys_universal_payload/543013.html?utm_source=google&utm_medium=cpc&utm_id=20589500605&utm_campaign=Performance_Max_Local_store_visits_and_promotions_%D0%BC%D0%B0%D0%BA%D1%81_%D1%86%D0%B5%D0%BD%D0%BD%D0%BE%D1%81%D1%82%D1%8C&gad_source=1&gclid=EAIaIQobChMIkJuR9Nr2hQMVX09BAh0MSQ43EAQYBiABEgIuE_D_BwE",
         "componentShopName": "MOYO",
         "componentCountry": "Україна"
-    }
-]
-
-const list3 = [
+    },
     {
         "componentName": "Квадрокоптер RC E88 Pro 2023 Black - дрон з 4K і HD камерами",
         "componentPrice": "995.0",
@@ -191,14 +247,23 @@ const list3 = [
     },
 ]
 
-const ProductList = ({search_result}) => {
+
+const instruction1 = "1";
+const instruction2 = "2";
+const instruction3 = "3";
+
+const ProductList = ({search_result, setInstruction}) => {
     return (
       <div class="container py-2">
         <div class="row">
             {Array.isArray(search_result) && search_result.length > 0 ? (
-              search_result.map((product) => <Product key={product.id} data={product} />)
+                search_result.map(
+                    (product, index) => (
+                        <Product key={product.id} data={product} index={index} setInstruction={setInstruction} />
+                    )
+                )
             ) : (
-              null
+                null
             )}
         </div>
       </div>
@@ -220,29 +285,59 @@ const ProductShopList = ({search_result}) => {
 };
 
 export const Kits = (props) => {
-    const [category, setCategory] = useState(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [searchResult, setSearchResult] = useState([]);
-    const [categoryName, setCategoryName] = useState("");
-    const [componentsNumber, setComponentsNumber] = useState(null);
-    const [sorting, setSorting] = useState(null);
+    const [currentIndex, setCurrentIndex] = useState(null);
+    const [instruction, setInstruction] = useState(null);
+
+    const handleInstructionChange = (index) => {
+        console.log("What =  ", index);
+
+        if (index === currentIndex && index != null) {
+            setCurrentIndex(null);
+            setInstruction(null);
+            return;
+        }
+
+
+        setCurrentIndex(index);
+        if (index === 0) {
+            setInstruction(instruction1);
+        }
+        else if (index === 1) {
+            setInstruction(instruction2);
+        }
+        else if (index === 2) {
+            setInstruction(instruction3);
+        }
+    }
 
     return (
         <div>
             <div>
-                <h5 className="w3-bar-item sub-title" style={{ marginTop: "20px", marginLeft: "8%" }}>Набір для збору квадрокоптера без гарнітури</h5>
-                <ProductList search_result={list1} />
-            </div>
-
-
-            <div>
-                <h5 className="w3-bar-item sub-title" style={{ marginTop: "20px", marginLeft: "8%" }}>Готові набори</h5>
-                <ProductShopList search_result={list2} />
+                <div className="row">
+                    <div className="col-md-6">
+                        <h5 className="w3-bar-item sub-title" style={{ marginTop: "20px", marginLeft: "15%" }}>Набір для збору квадрокоптера</h5>
+                    </div>
+                    <div className="col-md-6 d-flex justify-content-end align-items-center" style={{ paddingTop: "15px", paddingRight: "175px" }}>
+                        <Link to="/kits/compare" className="btn btn-success">
+                            Перевірити комплектуючі
+                        </Link>
+                    </div>
+                </div>
+                
+                <ProductList
+                    search_result={list1} 
+                    setInstruction={handleInstructionChange}
+                />
             </div>
             
             <div>
-                <h5 className="w3-bar-item sub-title" style={{ marginTop: "20px", marginLeft: "8%" }}>Набори в магазинах</h5>
-                <ProductShopList search_result={list3} />
+                {(instruction === "1" || instruction === "2") ? <ComponentList /> : (instruction === "3" ? <ComponentList3 /> : null)}
+            </div>
+    
+
+            <div>
+                <h5 className="w3-bar-item sub-title" style={{ marginTop: "20px", marginLeft: "8%" }}>Готові набори в магазинах</h5>
+                <ProductShopList search_result={list2} />
             </div>
         </div>
     );

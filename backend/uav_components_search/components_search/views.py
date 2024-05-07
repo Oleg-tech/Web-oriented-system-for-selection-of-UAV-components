@@ -12,7 +12,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from .data_parser.get_json_data import find_json_files_list, parse_json
-from .data_parser.asyncio_main_parser import asyncio_main_parser
+from .data_parser.asyncio_main_parser import asyncio_main_parser, asyncio_main_parser_for_categories
 from .data_parser.remove_inappropriate import remove_inappropriate_components
 from .models import Component
 from .utils import (
@@ -351,26 +351,67 @@ class AdminComponentFileView(APIView):
 category_names = {
     "Motor": "Мотори",
     "Propellers": "Пропелери",
+    "Turn regulator": "Регулятори обертання",
     "Flight controller": "Контроллери польотів",
+    "Stack": "Стеки",
     "Battery": "Акумулятори",
-    "Camera": "Камери",
-    "Antenna": "Антени",
     "Frame": "Каркаси",
+    "Camera": "Камери",
+    "Video transmitter": "Відеопередавачі",
+    "VTX": "Відеосистеми",
+    "Receiver": "Приймачі",
+    "Antenna": "Антени",
     "Control panel": "Пульти керування",
-    "Navigation module": "Навігаційні модулі"
+    "Glasses": "Окуляри",
+    "Quadcopters": "Квадрокоптери",
+    "Hexacopter": "Гексакоптери",
+    "Octocopter": "Октокоптери",
+    "Wing": "Крила"
 }
 
 category_query = {
     "Motor": ["мотор"],
     "Propellers": ["пропелери"],
+    "Turn regulator": ["Регулятор обертання"],
     "Flight controller": ["Контроллери польотів"],
+    "Stack": ["стеки"],
     "Battery": ["акумулятор"],
-    "Camera": ["камера"],
-    "Antenna": ["антена"],
     "Frame": ["каркас"],
+    "Camera": ["камера"],
+    "Video transmitter": ["відеопередавач"],
+    "VTX": ["vtx"],
+    "Receiver": ["приймач"],
+    "Antenna": ["антена"],
     "Control panel": ["Пульти керування"],
-    "Navigation module": ["Навігаційні модулі"],
-    "Kit": "набори"
+    "Glasses": ["окуляри"],
+    "Quadcopters": ["квадрокоптер"],
+    "Hexacopter": ["гексакоптер"],
+    "Octocopter": ["октокоптер"],
+    "Wing": ["крило"]
+}
+
+category_exceptions = {
+    "Motor": [
+        "квадрокоптер ", "електросамокат", "колесо", "плата", "сервопривід",
+        "кріплення ", "драйвер ", "рама", "болт", "підшипник", "контролер",
+        "світлодіод", "захист дротів", "серводвигун", "гума", "радіатор"
+    ],
+    "Propellers": [
+        "плата", "ключ", "дрон ", "рама ", "квадрокоптер ", "сумка ", "гайки ", "двигун "
+    ],
+    "Flight controller": [],
+    "Battery": [],
+    "Camera": [
+        "шлейф ", "фіксатор ", "корпус", "квадрокоптер ", "обмежувач повороту ",
+        "кріплення ", "кришка ", "демпфер ", "захист підвіса ", "поглинач вібрації",
+        "realme", "iphone", "телефон", "google pixel", "кабель ", "пульт керування ",
+        "Экшн-камера ", "action-камера ", "екшн", "екшен", "фотокамера", "вертоліт",
+        "гексакоптер", "панорамна камера", "фільтри"
+    ],
+    "Antenna": [],
+    "Frame": [],
+    "Control panel": [],
+    "Navigation module": []
 }
 
 
@@ -431,18 +472,22 @@ class FindByCategoryView(APIView):
                 "companies": companies,
                 "parameters": parameters
             })
-
         else:
             user_ip = get_user_ip(request)
             result_components = []
 
-            for component_name in category_query[category_name]:
+            for component_query in category_query[category_name]:
                 with concurrent.futures.ThreadPoolExecutor() as executor:
-                    future = executor.submit(run_asyncio_main_parser, user_ip, component_name)
+                    future = executor.submit(run_asyncio_main_parser_category, component_query, category_name)
                     components = future.result()
 
                 for new_component in components:
                     result_components.append(new_component)
+
+            result_components = discard_wrong_by_key_word(
+                components=components,
+                category=category_name
+            )
 
             result_components = insert_parameters(
                 components=result_components
@@ -485,3 +530,30 @@ class FindByCategoryView(APIView):
                 "companies": companies,
                 "parameters": parameters
             })
+
+
+def run_asyncio_main_parser_category(query, category):
+    loop = asyncio.new_event_loop()
+    try:
+        components = loop.run_until_complete(asyncio_main_parser_for_categories(query, category))
+    finally:
+        loop.close()
+    return components
+
+
+def discard_wrong_by_key_word(components, category):
+    key_words = category_exceptions[category]
+
+    filtered_components = []
+
+    for i in components:
+        found_match = False
+        for key_word in key_words:
+            if key_word in i["componentName"].lower():
+                found_match = True
+                break
+
+        if not found_match:
+            filtered_components.append(i)
+
+    return filtered_components

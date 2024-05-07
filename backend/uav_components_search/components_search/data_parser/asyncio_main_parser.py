@@ -301,6 +301,57 @@ async def asyncio_main_parser(user_ip, query):
     return all_products
 
 
+async def asyncio_main_parser_for_categories(query, category):
+    all_products.clear()
+    json_files_list = find_json_files_list()
+
+    print("JSON files list = ", json_files_list)
+
+    tasks = []
+    for source in json_files_list:
+        source_data = parse_json(source_file_path=source)
+        if source in category_requests_by_shop and category in category_requests_by_shop[source]:
+            new_query = category_requests_by_shop[source][category]
+            if new_query == "EXCEPT":
+                continue
+            else:
+                tasks.append(asyncio.create_task(parse_source(source_data, new_query)))
+        else:
+            tasks.append(asyncio.create_task(parse_source(source_data, query)))
+
+    await asyncio.gather(*tasks)
+
+    return all_products
+
+
+category_requests_by_shop = {
+    './components_search/data_parser/component_source_data\\dronostore_source_data.json': {
+
+    },
+    './components_search/data_parser/component_source_data\\drontech_source_data.json': {},
+    './components_search/data_parser/component_source_data\\ekatalog_source_data.json': {},
+    './components_search/data_parser/component_source_data\\flytechnology_source_data.json': {},
+    './components_search/data_parser/component_source_data\\fpvua_source_data.json': {},
+    './components_search/data_parser/component_source_data\\hotline_source_data.json': {
+        "Motor": "EXCEPT",
+        "Camera": "камера для дрона"
+    },
+    './components_search/data_parser/component_source_data\\mobileparts_source_data.json': {
+        "Camera": "камера fpv"
+    },
+    './components_search/data_parser/component_source_data\\modelistam_source_data.json': {},
+    './components_search/data_parser/component_source_data\\mydrone_source_data.json': {},
+    './components_search/data_parser/component_source_data\\prom_ua_source_data.json': {
+        "Motor": "мотор для fpv",
+        "Propellers": "пропелери для дрона"
+    },
+    './components_search/data_parser/component_source_data\\pyn_source_data.json': {},
+    './components_search/data_parser/component_source_data\\robostor_source_data.json': {},
+    './components_search/data_parser/component_source_data\\runcam_source_data.json': {
+        "Camera": "camera fpv"
+    }
+}
+
 # if __name__ == "__main__":
 #     start = time()
 #     result = asyncio.run(main_parser(query="камера"))

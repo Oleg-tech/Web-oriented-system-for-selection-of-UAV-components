@@ -15,8 +15,10 @@ const formatPrice = (price) => {
     return `${price.toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₴`;
 };
 
-export const Product = (props) => {
-    const { componentDescription, componentImageURL } = props.data;
+export const Product = ({data, index, setInstruction}) => {
+    const { componentDescription, componentImageURL } = data;
+
+    console.log("NeIndex = ", index);
 
     const componentPrice = Object.values(componentDescription).reduce((acc, [link, price]) => acc + parseFloat(price), 0);
 
@@ -31,7 +33,7 @@ export const Product = (props) => {
                                 background: 'none',
                                 cursor: 'pointer'
                             }}
-                            // onClick={addToFavorites}
+                            // onClick={setInstruction()}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "20px" }} width="20px" height="20px" fill="currentColor" className="bi bi-download" viewBox="0 0 16 16">
                                 <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
@@ -51,7 +53,7 @@ export const Product = (props) => {
                     }}
                 />
                 <div class="card-body">
-                    <div class="justify-content-between mb-3">
+                    <div class="justify-content-between mb-3" style={{ height:"480px" }}>
                     {Object.entries(componentDescription).map(([description, [link, price]], index) => (
                         <div key={index}>
                             <h5 class="mb-0 clamp-text" style={{ fontSize: "15px", maxHeight: "50px", minHeight: "50px" }}>
@@ -65,6 +67,15 @@ export const Product = (props) => {
                         <h5 class="text-dark mb-0">
                             {formatPrice(componentPrice)}
                         </h5>
+                    </div>
+
+                    <div align="center" style={{marginTop: "15px"}}>
+                        <button 
+                            className="btn btn-success"
+                            onClick={() => setInstruction(index)}
+                        >
+                            Детальніше
+                        </button>
                     </div>
                 </div>
             </div>

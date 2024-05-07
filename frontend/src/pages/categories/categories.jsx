@@ -164,9 +164,9 @@ export const Categories = (props) => {
         const sortOption = event.target.value;
     
         setSorting(sortOption);
-      };
+    };
 
-    if (category === "") {
+    if (category === null) {
         return (
             <div className="shop">
                 <div className="w3-sidebar w3-bar-block w3-card" style={{ width: '17%', left: 0 }}>
@@ -177,14 +177,57 @@ export const Categories = (props) => {
                     <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Motor")}>
                         Мотори
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Propellers")}>Пропелери</button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>Контроллери польоту</button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Battery")}>Акумулятори</button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Frame")}>Каркаси</button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>Камери</button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("motors")}>Пульти керування</button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("motors")}>Навігаційні модулі</button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>Антени</button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Propellers")}>
+                        Пропелери
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                        Регулятори обертання
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                        Контроллери польоту
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                        Стеки
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Battery")}>
+                        Акумулятори
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Frame")}>
+                        Каркаси
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
+                        Камери
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
+                        Відеопередавачі
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
+                        Відеосистеми (VTX)
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("motors")}>
+                        Приймачі
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                        Антени
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("motors")}>
+                        Пульти керування
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("motors")}>
+                        Окуляри
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                        Квадрокоптери
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                        Гексакоптери
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                        Октокоптери
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                        Крила
+                    </button>
                 </div>
         
                 <div className="product-info" style={{marginLeft: '17%', marginRight: '1%'}}>
@@ -223,7 +266,13 @@ export const Categories = (props) => {
                         Пропелери
                     </button>
                     <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                        Регулятори обертання
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
                         Контроллери польоту
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                        Стеки
                     </button>
                     <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Battery")}>
                         Акумулятори
@@ -234,14 +283,35 @@ export const Categories = (props) => {
                     <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
                         Камери
                     </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
+                        Відеопередавачі
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
+                        Відеосистеми (VTX)
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Motor")}>
+                        Приймачі
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                        Антени
+                    </button>
                     <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Motor")}>
                         Пульти керування
                     </button>
                     <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Motor")}>
-                        Навігаційні модулі
+                        Окуляри
                     </button>
                     <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
-                        Антени
+                        Квадрокоптери
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                        Гексакоптери
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                        Октокоптери
+                    </button>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                        Крила
                     </button>
                 </div>
         
@@ -317,6 +387,14 @@ export const Categories = (props) => {
                     />
                 ) : null }
 
+{/*  */}
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                    Регулятори обертання
+                </button>
+
+{/*  */}
+
                 <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
                     Контроллери польоту
                 </button>
@@ -338,6 +416,10 @@ export const Categories = (props) => {
                         setSelectedParameters={setSelectedParameters}
                     />
                 ) : null }
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Battery")}>
+                    Стеки
+                </button>
 
                 <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Battery")}>
                     Акумулятори
@@ -365,8 +447,6 @@ export const Categories = (props) => {
                     Каркаси
                 </button>
 
-
-
                 <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
                     Камери
                 </button>
@@ -389,15 +469,46 @@ export const Categories = (props) => {
                     />
                 ) : null }
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Control panel")}>
-                    Пульти керування
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    Відеопередавачі
                 </button>
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Navigation module")}>
-                    Навігаційні модулі
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    Відеосистеми (VTX)
                 </button>
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    Приймачі
+                </button>
+
                 <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
                     Антени
                 </button>
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Control panel")}>
+                    Пульти керування
+                </button>
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Control panel")}>
+                    Окуляри
+                </button>
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    Квадрокоптери
+                </button>
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    Гексакоптери
+                </button>
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    Октокоптери
+                </button>
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    Крила
+                </button>
+
             </div>
     
             <div className="product-info" style={{marginLeft: '17%', marginRight: '1%'}}>

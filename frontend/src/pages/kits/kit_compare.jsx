@@ -6,8 +6,107 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 
 
+const filterVTXsByType = (cameraType, vtxs) => {
+    if (!vtxs || !cameraType) {
+      return {};
+    }
+  
+    const filteredVTXs = {};
+  
+    for (const key in vtxs) {
+      const vtx = vtxs[key];
+      if (
+        (cameraType === "Аналогова" && vtx.Тип === "Аналогова") ||
+        (cameraType === "Цифрова" && vtx.Тип === "Цифрова")
+      ) {
+        filteredVTXs[key] = vtx;
+      }
+    }
+  
+    return filteredVTXs;
+};
+
+const filterCamerasByVTXType = (vtxType, cameras) => {
+    if (!cameras || !vtxType) {
+      return {};
+    }
+  
+    const filteredCameras = {};
+  
+    for (const key in cameras) {
+      const camera = cameras[key];
+      if (
+        (vtxType === "Аналогова" && camera.Тип === "Аналогова") ||
+        (vtxType === "Цифрова" && camera.Тип === "Цифрова")
+      ) {
+        filteredCameras[key] = camera;
+      }
+    }
+  
+    return filteredCameras;
+};
+
+const filterAntennasByFrequency = (receiverFrequencies, antennas) => {
+    if (!antennas || !receiverFrequencies || receiverFrequencies.length === 0) {
+      return {};
+    }
+  
+    const filteredAntennas = {};
+  
+    for (const key in antennas) {
+      const antenna = antennas[key];
+      const antennaFrequencies = antenna["Робоча частота"];
+  
+      if (antennaFrequencies.some(freq => receiverFrequencies.includes(freq))) {
+        filteredAntennas[key] = antenna;
+      }
+    }
+  
+    return filteredAntennas;
+};
+
+const filterReceiversByFrequency = (antennaFrequencies, receivers) => {
+    if (!receivers || !antennaFrequencies || antennaFrequencies.length === 0) {
+      return {};
+    }
+  
+    const filteredReceivers = {};
+  
+    for (const key in receivers) {
+      const receiver = receivers[key];
+      const receiverFrequencies = receiver["Робоча частота"];
+  
+      if (receiverFrequencies.some(freq => antennaFrequencies.includes(freq))) {
+        filteredReceivers[key] = receiver;
+      }
+    }
+  
+    return filteredReceivers;
+};
+
+const filterBatteriesByMotor = (motor, batteries) => {
+    if (!batteries || !motor) {
+      return {};
+    }
+  
+    const motorMaxCurrent = motor["Максимальний струм"];
+  
+    const filteredBatteries = {};
+  
+    for (const key in batteries) {
+      const battery = batteries[key];
+      const batteryPeakCurrent = battery["Піковий струм"];
+  
+      if (batteryPeakCurrent >= motorMaxCurrent) {
+        filteredBatteries[key] = battery;
+      }
+    }
+  
+    return filteredBatteries;
+};
+
 // Відео
-const cameras = {
+const original_cameras = {
     "Caddx Ratel 2 V2": {
         "Тип": "Аналогова",
         "Роздільна здатність": "1200 TVL",
@@ -25,7 +124,7 @@ const cameras = {
     }
 };
 
-const vtxs = {
+const original_vtxs = {
     "AKK FX2 Ultimate": {
         "Тип": "Аналогова",
         "Вихідна потужність": "25/200/500/800/1200mW",
@@ -41,7 +140,7 @@ const vtxs = {
     }
 }
 
-const video_systems = {
+const original_video_systems = {
     "Caddx Polar Vista": {
         "Тип": "Цифрова",
         "Частота": 5.8,
@@ -50,7 +149,7 @@ const video_systems = {
 }
 
 // Польотні контроллери / Стек
-const turn_regulators = {
+const original_turn_regulators = {
     "T-Motor F55A Pro II ESC": {
         "Тип": "4",
         "Робоча напруга": "10.0-27.0 В",
@@ -77,7 +176,7 @@ const turn_regulators = {
     }
 }
 
-const flight_controllers = {
+const original_flight_controllers = {
     "SpeedyBee F405 V3 BLS 50A": {
         "Максимальний струм": 55,
         "Робоча напруга": "7.0-22.0 В",
@@ -86,7 +185,7 @@ const flight_controllers = {
     },
 }
 
-const flight_controller_aios = {
+const original_flight_controller_aios = {
     "SpeedyBee F405 V3 BLS 50A": {
         "Максимальний струм": 60,
         "Робоча напруга": "11.1-22.2 В",
@@ -102,7 +201,7 @@ const flight_controller_aios = {
 }
 
 // Матеріальні компоненти
-const propellers = {
+const original_propellers = {
     "HQProp 7x4x3 полікарбонат": {
         "Діаметр пропелера": "7 дюймів",
         "Крок": 4,
@@ -115,7 +214,7 @@ const propellers = {
     }
 }
 
-const motors = {
+const original_motors = {
     "T-Motor F40 Pro II 2400KV": {
         "Максимальний струм": 49.62,
         "Робоча напруга": "11.1-14.8 В",
@@ -128,106 +227,239 @@ const motors = {
     }
 }
 
-const batteries = {
+const original_batteries = {
     "Energy Life Li-Ion 6S2P горизонтальна 21700-P42A 12AWG XT60-F": {
         "Мінімальна напруга": 19.2,
         "Максимальна напруга": 25.2,
-        "Номінальна напруга": "21,6 В",
+        "Номінальна напруга": "21.6 В",
         "Ємність": "8400 мА·год",
         "Конфігурація": "6S2P",
         "Хімія": "Li-Ion",
         "Конектор": "XT60-F",
         "Номінальний струм": 60.0,
         "Піковий струм": 90.0
+    },
+    "Fullymax 22.2V 1600mAh Li-Po 6S 100C XT60": {
+        "Мінімальна напруга": 19.8,
+        "Максимальна напруга": 25.2,
+        "Номінальна напруга": 22.2,
+        "Ємність": "1600 мА·год",
+        "Конфігурація": "6S",
+        "Хімія": "Li-Ion",
+        "Конектор": "XT60",
+        "Номінальний струм": 100.0,
+        "Піковий струм": 150.0
     }
 }
 
 // Зв'язок
-const receivers = {
+const original_receivers = {
     "TBS Crossfire Nano RX (SE)": {
         "Протокол зв'язку": "CROSSFIRE",
-        "Робоча частота": "868 MHz, 915 MHz",
+        "Робоча частота": [868, 915], // МГц
         "Робоча напруга": "3.3-8.4 В",
         "Вага": 0.5
     },
     "915MHz HappyModel ELRS ES900RX": {
         "Протокол зв'язку": "ELRS",
-        "Робоча частота": "915 МГц",
+        "Робоча частота": [915],
         "Робоча напруга": "4.5-5.0 В",
         "Вага": 1.5
     },
     "FrSky RX8R-PRO 2.4 ГГц": {
         "Протокол зв'язку": "ACCST D8 | ACCST D16",
-        "Робоча частота": "2450 МГц",
+        "Робоча частота": [2450],
         "Робоча напруга": "3.5-10.0 В",
         "Вага": 14.8
     }
 }
 
-const antennas = {
+const original_antennas = {
     "RushFPV Cherry 5.8GHz SMA 160mm": {
         "Довжина": 160,
-        "Частота": "5.8 ГГц",
+        "Робоча частота": [5800],
         "Вага": 11.5
     },
     "ELRS GEPRC 915 мГц": {
         "Довжина": 75,
-        "Частота": "915 МГц",
+        "Робоча частота": [915],
         "Вага": 2.6
     }
 }
 
 export const KitsCompare = (props) => {
-    const [category, setCategory] = useState(null);
+    const [selectedCamera, setSelectedCamera] = useState(null);
+    const [selectedVTX, setSelectedVTX] = useState(null);
+    const [selectedVideoSystem, setSelectedVideoSystem] = useState(null);
 
-    const [camera, setCamera] = useState(null);
-    const [VTX, setVTX] = useState(null);
-    const [videoSystem, setVideoSystem] = useState(null);
-    const [turnRegulator, setturnRegulator] = useState(null);
+    const [selectedTurnRegulator, setSelectedTurnRegulator] = useState(null);
+    const [selectedFlightController, setSelectedFlightController] = useState(null);
+    const [selectedFlightControllerAIO, setSelectedFlightControllerAIO] = useState(null);
 
-    const handleCameraChange = () => {
+    const [selectedReceiver, setSelectedReceiver] = useState(null);
+    const [selectedAntenna, setSelectedAntenna] = useState(null);
+
+    const [selectedMotor, setSelectedMotor] = useState(null);
+    const [selectedPropeller, setSelectedPropeller] = useState(null);
+    const [selectedBattery, setSelectedBattery] = useState(null);
+
+    const [cameras, setCameras] = useState([]);
+    const [vtxs, setVTXs] = useState([]);
+    const [video_systems, setVideoSystems] = useState([]);
+    const [receivers, setRecievers] = useState([]);
+    const [turn_regulators, setTurnRegulators] = useState([]);
+    const [flight_controllers, setFlightControllers] = useState([]);
+    const [flight_controller_aios, setFlightControllerAIOs] = useState([]);
+    const [antennas, setAntennas] = useState([]);
+    const [motors, setMotors] = useState([]);
+    const [propellers, setPropellers] = useState([]);
+    const [batteries, setBatteries] = useState([]);
+
+    const [result, setResult] = useState(null);
+
+    useEffect (() => {
+        setCameras(original_cameras);
+        setVTXs(original_vtxs);
+        setVideoSystems(original_video_systems);
+        setRecievers(original_receivers);
+        setTurnRegulators(original_turn_regulators);
+        setFlightControllers(original_flight_controllers);
+        setFlightControllerAIOs(original_flight_controller_aios);
+        setAntennas(original_antennas);
+        setMotors(original_motors);
+        setPropellers(original_propellers);
+        setBatteries(original_batteries);
+    }, []);
+
+    const handleCameraChange = (cameraName) => {
+        setSelectedVideoSystem(null);
+
+        setSelectedCamera(cameraName);
+
+        const selectedCamera = cameras[cameraName];
+        const cameraType = selectedCamera.Тип;
+        const filteredVTXs = filterVTXsByType(cameraType, original_vtxs);
+      
+        setVTXs(filteredVTXs);
+    };
+    
+    const handleVTXChange = (vtxName) => {
+        setSelectedVideoSystem(null);
+        
+        setSelectedVTX(vtxName);
+
+        const selectedVTX = original_vtxs[vtxName];
+        const vtxType = selectedVTX.Тип;
+        const filteredCameras = filterCamerasByVTXType(vtxType, original_cameras);
+      
+        setCameras(filteredCameras);
+    };
+    
+    const handleVideoSystemChange = (videoSystemName) => {
+        setSelectedCamera(null);
+        setSelectedVTX(null);
+        
+        setSelectedVideoSystem(videoSystemName);
+    };
+
+    /////////////////////////////// 
+
+    const handleTurnRegulatorChange = (turn_regulator) => {
+        setSelectedFlightControllerAIO(null);
+
+        setSelectedTurnRegulator(turn_regulator);
+
+        // const selectedCamera = cameras[cameraName];
+        // const cameraType = selectedCamera.Тип;
+        // const filteredVTXs = filterVTXsByType(cameraType, original_vtxs);
+      
+        // setVTXs(filteredVTXs);
 
     }
 
-    const handleVTXChange = () => {
+    const handleFlightControllerChange = (flight_controller) => {
+        setSelectedFlightControllerAIO(null);
 
+        setSelectedFlightController(flight_controller);
     }
 
-    const handleVideoSystemChange = () => {
+    const handleFlightControllerAIOChange = (flight_controller_aio) => {
+        setSelectedTurnRegulator(null);
+        setSelectedFlightController(null);
 
+        setSelectedFlightControllerAIO(flight_controller_aio);
     }
 
-    const handleTurnRegulatorChange = () => {
+    //////////////////////////////
 
+    const handleReceiverChange = (receiver) => {
+        setSelectedReceiver(receiver);
+
+        const selectedReceiver = original_receivers[receiver];
+        const receiverFrequencies = selectedReceiver["Робоча частота"];
+        const filteredAntennas = filterAntennasByFrequency(receiverFrequencies, original_antennas);
+      
+        setAntennas(filteredAntennas);
     }
 
-    const handleFlightControllerChange = () => {
+    const handleAntennaChange = (antenna) => {
+        setSelectedAntenna(antenna);
 
+        const selectedAntenna = original_antennas[antenna];
+        const antennaFrequencies = selectedAntenna["Робоча частота"];
+        const filteredReceivers = filterReceiversByFrequency(antennaFrequencies, original_receivers);
+      
+        setRecievers(filteredReceivers);
     }
 
-    const handleFlightControllerAIOChange = () => {
+    const handleMotorChange = (motor) => {
+        setSelectedMotor(motor);
 
+        const selectedMotor = original_motors[motor];
+        const filteredBatteries = filterBatteriesByMotor(selectedMotor, original_batteries);
+      
+        setBatteries(filteredBatteries);
     }
 
-    const handleMotorChange = () => {
-
+    const handlePropellerChange = (propeller) => {
+        setSelectedPropeller(propeller);
     }
 
-    const handleReceiverChange = () => {
-
+    const handleBatteryChange = (battery) => {
+        setSelectedBattery(battery);
     }
 
-    const handleAntennaChange = () => {
+    const handleButtonClick = () => {
+        const result = {};
+        let totalWeight = 0;
+      
+        const addElementToResult = (element, key) => {
+          if (element) {
+            result[key] = { ...element };
+            if (element.Вага) {
+              totalWeight += element.Вага;
+            }
+          }
+        };
+      
+        addElementToResult(cameras[selectedCamera], "Камера");
+        addElementToResult(vtxs[selectedVTX], "Відеопередавач");
+        addElementToResult(video_systems[selectedVideoSystem], "Відеосистема");
+        addElementToResult(receivers[selectedReceiver], "Приймач");
+        addElementToResult(turn_regulators[selectedTurnRegulator], "Регулятор обертів");
+        addElementToResult(flight_controllers[selectedFlightController], "Польотний контролер");
+        addElementToResult(flight_controller_aios[selectedFlightControllerAIO], "Польотний контролер AIO");
+        addElementToResult(antennas[selectedAntenna], "Антена");
+        addElementToResult(motors[selectedMotor], "Мотор");
+        addElementToResult(propellers[selectedPropeller], "Пропелер");
+        addElementToResult(batteries[selectedBattery], "Батарея");
 
-    }
-
-    const handlePropellerChange = () => {
-
+        setResult({ data: result, totalWeight });
     }
 
     return (
         <div>
-            <div style={{ width: "min-content", display: "flex", flexDirection: "row" }}>
+            <div style={{ width: "min-content", display: "flex", flexDirection: "row", marginTop: "30px", marginLeft: "250px" }}>
                 <div>
                     <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Камера</span>
                     {Object.keys(cameras).map((cameraName, index) => (
@@ -235,8 +467,9 @@ export const KitsCompare = (props) => {
                             <label className="custom-checkbox">
                                 <input
                                     type="radio"
-                                    name={cameraName}
+                                    name="camera"
                                     value={cameraName}
+                                    checked={selectedCamera === cameraName}
                                     onChange={() => handleCameraChange(cameraName)}
                                 />
                                 <span className="checkmark"></span>
@@ -246,6 +479,8 @@ export const KitsCompare = (props) => {
                     ))}
                 </div>
                 
+                {/* /////////////  Відеопередавач  ////////////// */}
+
                 <div>
                     <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Відеопередавач (VTX)</span>
                     {Object.keys(vtxs).map((vtx, index) => (
@@ -253,8 +488,9 @@ export const KitsCompare = (props) => {
                             <label className="custom-checkbox">
                                 <input
                                     type="radio"
-                                    name={vtx}
+                                    name="vtx"
                                     value={vtx}
+                                    checked={selectedVTX === vtx}
                                     onChange={() => handleVTXChange(vtx)}
                                 />
                                 <span className="checkmark"></span>
@@ -264,6 +500,8 @@ export const KitsCompare = (props) => {
                     ))}
                 </div>
             
+                {/* /////////////  Відеосистема  ////////////// */}
+
                 <div style={{ width: "min-content" }}>
                     <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Відеосистема</span>
                     {Object.keys(video_systems).map((video_system, index) => (
@@ -271,8 +509,9 @@ export const KitsCompare = (props) => {
                             <label className="custom-checkbox">
                                 <input
                                     type="radio"
-                                    name={video_system}
+                                    name="video_system"
                                     value={video_system}
+                                    checked={selectedVideoSystem === video_system}
                                     onChange={() => handleVideoSystemChange(video_system)}
                                 />
                                 <span className="checkmark"></span>
@@ -283,125 +522,206 @@ export const KitsCompare = (props) => {
                 </div>
             </div>
 
-            {/* /////////////////////////// */}
+            {/* /////////////  Регулятор обертання  ////////////// */}
 
-            <div style={{ paddingTop: "20px" }}>
-                {Object.keys(turn_regulators).map((turn_regulator, index) => (
-                    <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "15px" }}>
-                        <label className="custom-checkbox">
-                            <input
-                                type="radio"
-                                name={turn_regulator}
-                                value={turn_regulator}
-                                onChange={() => handleTurnRegulatorChange(turn_regulator)}
-                            />
-                            <span className="checkmark"></span>
-                            <span className="label-text" style={{ fontSize: "15px" }}>{turn_regulator}</span>
-                        </label>
-                    </li>
-                ))}
+            <div style={{ width: "min-content", display: "flex", flexDirection: "row", marginTop: "30px", marginLeft: "250px" }}>
+                <div>
+                    <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Регулятор обертання (ESC)</span>
+                    {Object.keys(turn_regulators).map((turn_regulator, index) => (
+                        <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
+                            <label className="custom-checkbox">
+                                <input
+                                    type="radio"
+                                    name="turn_regulator"
+                                    value={turn_regulator}
+                                    checked={selectedTurnRegulator === turn_regulator}
+                                    onChange={() => handleTurnRegulatorChange(turn_regulator)}
+                                />
+                                <span className="checkmark"></span>
+                                <span className="label-text" style={{ fontSize: "20px" }}>{turn_regulator}</span>
+                            </label>
+                        </li>
+                    ))}
+                </div>
+                
+                {/* /////////////  Польотний контролер  ////////////// */}
 
-                {Object.keys(flight_controllers).map((flight_controller, index) => (
-                    <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "15px" }}>
-                        <label className="custom-checkbox">
-                            <input
-                                type="radio"
-                                name={flight_controller}
-                                value={flight_controller}
-                                onChange={() => handleFlightControllerChange(flight_controller)}
-                            />
-                            <span className="checkmark"></span>
-                            <span className="label-text" style={{ fontSize: "15px" }}>{flight_controller}</span>
-                        </label>
-                    </li>
-                ))}
+                <div>
+                    <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Польотний контролер</span>
+                    {Object.keys(flight_controllers).map((flight_controller, index) => (
+                        <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
+                            <label className="custom-checkbox">
+                                <input
+                                    type="radio"
+                                    name="flight_controller"
+                                    value={flight_controller}
+                                    checked={selectedFlightController === flight_controller}
+                                    onChange={() => handleFlightControllerChange(flight_controller)}
+                                />
+                                <span className="checkmark"></span>
+                                <span className="label-text" style={{ fontSize: "20px" }}>{flight_controller}</span>
+                            </label>
+                        </li>
+                    ))}
+                </div>
+            
+                {/* /////////////  Польотний контролер (AIO)  ////////////// */}
+
+                <div style={{ width: "min-content" }}>
+                    <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Польотний контролер (AIO)</span>
+                    {Object.keys(flight_controller_aios).map((flight_controller_aio, index) => (
+                        <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
+                            <label className="custom-checkbox">
+                                <input
+                                    type="radio"
+                                    name="flight_controller_aio"
+                                    value={flight_controller_aio}
+                                    checked={selectedFlightControllerAIO === flight_controller_aio}
+                                    onChange={() => handleFlightControllerAIOChange(flight_controller_aio)}
+                                />
+                                <span className="checkmark"></span>
+                                <span className="label-text" style={{ fontSize: "20px" }}>{flight_controller_aio}</span>
+                            </label>
+                        </li>
+                    ))}
+                </div>
             </div>
 
-            <div>
-                {Object.keys(flight_controller_aios).map((flight_controller_aio, index) => (
-                    <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "15px" }}>
-                        <label className="custom-checkbox">
-                            <input
-                                type="radio"
-                                name={flight_controller_aio}
-                                value={flight_controller_aio}
-                                onChange={() => handleFlightControllerAIOChange(flight_controller_aio)}
-                            />
-                            <span className="checkmark"></span>
-                            <span className="label-text" style={{ fontSize: "15px" }}>{flight_controller_aio}</span>
-                        </label>
-                    </li>
-                ))}
+            {/* ////////  Приймач  //////// */}
+
+            <div style={{ width: "min-content", display: "flex", flexDirection: "row", marginTop: "30px", marginLeft: "250px" }}>
+                <div>
+                    <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Приймачі сигналу</span>
+                    {Object.keys(receivers).map((receiver, index) => (
+                        <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
+                            <label className="custom-checkbox">
+                                <input
+                                    type="radio"
+                                    name="receiver"
+                                    value={receiver}
+                                    checked={selectedReceiver === receiver}
+                                    onChange={() => handleReceiverChange(receiver)}
+                                />
+                                <span className="checkmark"></span>
+                                <span className="label-text" style={{ fontSize: "20px" }}>{receiver}</span>
+                            </label>
+                        </li>
+                    ))}
+                </div>
+
+                {/* ////////  Антена  /////// */}
+
+                <div>
+                    <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Антени</span>
+                    {Object.keys(antennas).map((antenna, index) => (
+                        <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
+                            <label className="custom-checkbox">
+                                <input
+                                    type="radio"
+                                    name="antenna"
+                                    value={antenna}
+                                    checked={selectedAntenna === antenna}
+                                    onChange={() => handleAntennaChange(antenna)}
+                                />
+                                <span className="checkmark"></span>
+                                <span className="label-text" style={{ fontSize: "20px" }}>{antenna}</span>
+                            </label>
+                        </li>
+                    ))}
+                </div>
+
+                {/* {/////////  Мотор  //////////} */}
+
+                <div>
+                    <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Мотори</span>
+                    {Object.keys(motors).map((motor, index) => (
+                        <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
+                            <label className="custom-checkbox">
+                                <input
+                                    type="radio"
+                                    name="motor"
+                                    value={motor}
+                                    checked={selectedMotor === motor}
+                                    onChange={() => handleMotorChange(motor)}
+                                />
+                                <span className="checkmark"></span>
+                                <span className="label-text" style={{ fontSize: "20px" }}>{motor}</span>
+                            </label>
+                        </li>
+                    ))}
+                </div>
             </div>
 
-            <div>
-                {Object.keys(motors).map((motor, index) => (
-                    <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "15px" }}>
-                        <label className="custom-checkbox">
-                            <input
-                                type="radio"
-                                name={motor}
-                                value={motor}
-                                onChange={() => handleMotorChange(motor)}
-                            />
-                            <span className="checkmark"></span>
-                            <span className="label-text" style={{ fontSize: "15px" }}>{motor}</span>
-                        </label>
-                    </li>
-                ))}
+            {/* //////// Пропелер /////// */}
+
+            <div style={{ width: "min-content", display: "flex", flexDirection: "row", marginTop: "30px", marginLeft: "250px" }}>
+                <div>
+                    <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Пропелери</span>
+                    {Object.keys(propellers).map((propeller, index) => (
+                        <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
+                            <label className="custom-checkbox">
+                                <input
+                                    type="radio"
+                                    name="propeller"
+                                    value={propeller}
+                                    checked={selectedPropeller === propeller}
+                                    onChange={() => handlePropellerChange(propeller)}
+                                />
+                                <span className="checkmark"></span>
+                                <span className="label-text" style={{ fontSize: "20px" }}>{propeller}</span>
+                            </label>
+                        </li>
+                    ))}
+                </div>
+
+                {/* /////////////  Батарея  ////////////// */}
+
+                <div>
+                    <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Батарея</span>
+                    {Object.keys(batteries).map((battery, index) => (
+                        <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
+                            <label className="custom-checkbox">
+                                <input
+                                    type="radio"
+                                    name="battery"
+                                    value={battery}
+                                    checked={selectedBattery === battery}
+                                    onChange={() => handleBatteryChange(battery)}
+                                />
+                                <span className="checkmark"></span>
+                                <span className="label-text" style={{ fontSize: "20px" }}>{battery}</span>
+                            </label>
+                        </li>
+                    ))}
+                </div>
+            </div>
+            
+            <div style={{ paddingTop: "50px", paddingBottom: "50px", paddingLeft: "40%" }}>
+                <button align="center"
+                    className="btn btn-success"
+                    style={{ backgroundColor: 'green', color: 'white' }}
+                    onClick={handleButtonClick}
+                >
+                    Згенерувати характеристики
+                </button>
             </div>
 
-            <div>
-                {Object.keys(receivers).map((receiver, index) => (
-                    <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "15px" }}>
-                        <label className="custom-checkbox">
-                            <input
-                                type="radio"
-                                name={receiver}
-                                value={receiver}
-                                onChange={() => handleReceiverChange(receiver)}
-                            />
-                            <span className="checkmark"></span>
-                            <span className="label-text" style={{ fontSize: "15px" }}>{receiver}</span>
-                        </label>
-                    </li>
-                ))}
-            </div>
-
-            <div>
-                {Object.keys(antennas).map((antenna, index) => (
-                    <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "15px" }}>
-                        <label className="custom-checkbox">
-                            <input
-                                type="radio"
-                                name={antenna}
-                                value={antenna}
-                                onChange={() => handleAntennaChange(antenna)}
-                            />
-                            <span className="checkmark"></span>
-                            <span className="label-text" style={{ fontSize: "15px" }}>{antenna}</span>
-                        </label>
-                    </li>
-                ))}
-            </div>
-
-            <div>
-                {Object.keys(propellers).map((propeller, index) => (
-                    <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "15px" }}>
-                        <label className="custom-checkbox">
-                            <input
-                                type="radio"
-                                name={propeller}
-                                value={propeller}
-                                onChange={() => handlePropellerChange(propeller)}
-                            />
-                            <span className="checkmark"></span>
-                            <span className="label-text" style={{ fontSize: "15px" }}>{propeller}</span>
-                        </label>
-                    </li>
-                ))}
-            </div>
-
+            {result && (
+                <div className="result">
+                    <h2>Конфігурація FPV дрона</h2>
+                    {Object.entries(result.data).map(([key, value]) => (
+                        <div key={key}>
+                            <h3>{key}</h3>
+                            <ul>
+                                {Object.entries(value).map(([prop, val]) => (
+                                    <li key={prop}>{prop}: {val}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    ))}
+                    <h3>Сумарна вага: {result.totalWeight}</h3>
+                </div>
+            )}
         </div>
     );
 };
