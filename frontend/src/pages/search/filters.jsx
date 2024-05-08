@@ -11,9 +11,9 @@ export const Filter = ({
     companies, selectedCompanies, setSelectedCompanies,
     parameters, selectedParameters, setSelectedParameters
   }) => {
-  const [isFixed, setIsFixed] = useState(false);
-  const sidebarRef = useRef(null);
-  const sidebarOffsetTop = useRef(null);
+  // const [isFixed, setIsFixed] = useState(false);
+  // const sidebarRef = useRef(null);
+  // const sidebarOffsetTop = useRef(null);
 
   const [minPrice, setMinPrice] = useState(minRangePrice);
   const [maxPrice, setMaxPrice] = useState(maxRangePrice);
@@ -28,22 +28,22 @@ export const Filter = ({
     handleSetup();
   }, [minRangePrice, maxRangePrice]);
 
-  useEffect(() => {
-    sidebarOffsetTop.current = sidebarRef.current.offsetTop;
+  // useEffect(() => {
+  //   sidebarOffsetTop.current = sidebarRef.current.offsetTop;
 
-    const handleScroll = () => {
-      const scrollPosition = window.pageYOffset;
+  //   const handleScroll = () => {
+  //     const scrollPosition = window.pageYOffset;
 
-      if (scrollPosition >= sidebarOffsetTop.current) {
-        setIsFixed(true);
-      } else {
-        setIsFixed(false);
-      }
-    };
+  //     if (scrollPosition >= sidebarOffsetTop.current) {
+  //       setIsFixed(true);
+  //     } else {
+  //       setIsFixed(false);
+  //     }
+  //   };
 
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  //   window.addEventListener('scroll', handleScroll);
+  //   return () => window.removeEventListener('scroll', handleScroll);
+  // }, []);
 
   useEffect(() => {
     const rangevalue = document.querySelector(".slider-container .price-slider");
@@ -208,12 +208,14 @@ export const Filter = ({
 
   return (
     <div
-      ref={sidebarRef}
-      className={`w3-sidebar w3-bar-block w3-card ${isFixed ? 'fixed' : ''}`}
+      // ref={sidebarRef}
+      // className={`w3-sidebar w3-bar-block w3-card ${isFixed ? 'fixed' : ''}`}
+      className="w3-sidebar w3-bar-block w3-card"
       style={{
         width: '17%',
         left: 0,
-        ...(isFixed ? { position: 'fixed', top: 0 } : {}),
+        paddingTop: "70px"
+        // ...(isFixed ? { position: 'fixed', top: 0 } : {}),
       }}
     >
       <div className="filter-container">
@@ -280,10 +282,10 @@ export const Filter = ({
             </div>
           </div>
         </div>
-
-        <div style={{ paddingTop: "0" }}>
-          <h5 className="w3-bar-item sub-title">Магазини</h5>
-          {Array.isArray(shops) && shops.length > 0 ? (
+  
+        {Array.isArray(shops) && shops.length > 0 ? (
+          <div style={{ paddingTop: "0" }}>
+            <h5 className="w3-bar-item sub-title">Магазини</h5>
             <ul className="shop-list" style={{ paddingLeft: "10px" }}>
               {shops.map((shop, index) => (
                 <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "4px", paddingTop: "4px" }}>
@@ -299,14 +301,14 @@ export const Filter = ({
                 </li>
               ))}
             </ul>
-          ) : (
-            <p>Немає доступних магазинів</p>
-          )}
-        </div>
-
-        <div style={{ marginTop: "15px" }}>
-          <h5 className="w3-bar-item sub-title">Країни</h5>
-          {Array.isArray(countries) && countries.length > 0 ? (
+          </div>
+        ) : (
+          null
+        )}
+      
+        {Array.isArray(countries) && countries.length > 0 ? (
+          <div style={{ marginTop: "15px" }}>
+            <h5 className="w3-bar-item sub-title">Країни</h5>
             <ul className="shop-list" style={{ paddingLeft: "10px" }}>
               {countries.map((country, index) => (
                 <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "4px", paddingTop: "4px" }}>
@@ -322,14 +324,14 @@ export const Filter = ({
                 </li>
               ))}
             </ul>
-          ) : (
-            <p>Немає доступних країн</p>
-          )}
-        </div>
-
-        <div style={{ marginTop: "15px" }}>
-          <h5 className="w3-bar-item sub-title">Виробники</h5>
-          {Array.isArray(companies) && companies.length > 0 ? (
+          </div>
+        ) : (
+          null
+        )}
+        
+        {Array.isArray(companies) && companies.length > 0 ? (
+          <div style={{ marginTop: "15px" }}>
+            <h5 className="w3-bar-item sub-title">Виробники</h5>
             <ul className="shop-list" style={{ paddingLeft: "10px" }}>
               {companies.map((company, index) => (
                 <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "4px", paddingTop: "4px" }}>
@@ -345,10 +347,10 @@ export const Filter = ({
                 </li>
               ))}
             </ul>
-          ) : (
-            <p>Немає доступних виробників</p>
-          )}
-        </div>
+          </div>
+        ) : (
+          null
+        )}
 
         {Object.entries(parameters).map(([param, values]) => (
           <div style={{ marginTop: "15px" }} key={param}>

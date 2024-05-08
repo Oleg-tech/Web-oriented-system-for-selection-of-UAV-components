@@ -311,7 +311,7 @@ export const Kits = (props) => {
     }
 
     return (
-        <div>
+        <div style={{ paddingTop: "70px" }}>
             <div>
                 <div className="row">
                     <div className="col-md-6">

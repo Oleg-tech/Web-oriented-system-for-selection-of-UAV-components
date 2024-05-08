@@ -40,3 +40,39 @@ class ComponentsResultPagination(PageNumberPagination):
         self.parameters = parameters
 
         return super().paginate_queryset(queryset, request, view)
+
+
+class CategoryResultPagination(PageNumberPagination):
+    page_size = 32
+    max_page_size = 100
+    category=None
+    shops = None
+    countries = None
+    companies = None
+    parameters = None
+
+    def get_paginated_response(self, data):
+        return Response({
+            'detail': 'Query processed successfully',
+            'count': self.page.paginator.count,
+            'next': self.get_next_link(),
+            'previous': self.get_previous_link(),
+            'search_result': data,
+            'category_name': self.category,
+            'shop_list': self.shops or [],
+            'countries_list': self.countries or [],
+            'companies_list': self.companies or [],
+            'parameters_dict': self.parameters or {},
+        })
+
+    def paginate_queryset(
+            self, queryset, request, view=None, category=None,
+            shops=None, countries=None, companies=None,parameters=None
+    ):
+        self.shops = shops
+        self.countries = countries
+        self.category = category
+        self.companies = companies
+        self.parameters = parameters
+
+        return super().paginate_queryset(queryset, request, view)

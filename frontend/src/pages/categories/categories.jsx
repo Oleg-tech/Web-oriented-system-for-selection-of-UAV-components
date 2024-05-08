@@ -3,37 +3,28 @@ import axios from 'axios';
 import { MDBInput, MDBBtn } from 'mdb-react-ui-kit';
 import { Product } from './product';
 import { Filter } from "./filters";
+import { Pagination } from "./pagination";
 
 import 'w3-css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 
-
-export const bufFetchComponents = async (category) => {
+export const fetchComponents = async (category, currentPage, filtered_shops, filtered_countries, filtered_companies, selected_parameters, sorting) => {
     console.log("Category = ", category);
 
     let url = "http://127.0.0.1:8000/components/api/categories";
 
-    const data = { 
-      "category": category
-    };
-  
-    try {
-      const response = await axios.post(url, data);
-      console.log("Data:\n", response.data);
-
-      return response.data;
-    } catch (error) {
-      console.error('There was a problem with the fetch operation:', error);
-      throw error;
+    if (currentPage) {
+        if(url.includes("?")) {
+            const shopsQuery = filtered_shops.join(',');
+            url += `&page=${currentPage}`;            
+        }
+        else {
+            const shopsQuery = filtered_shops.join(',');
+            url += `?page=${currentPage}`;
+        }
     }
-};
 
-export const fetchComponents = async (category, filtered_shops, filtered_countries, filtered_companies, selected_parameters, sorting) => {
-    console.log("Category = ", category);
-
-    let url = "http://127.0.0.1:8000/components/api/categories";
-    
     if (filtered_shops) {
         if(url.includes("?")) {
             const shopsQuery = filtered_shops.join(',');
@@ -124,24 +115,40 @@ export const Categories = (props) => {
     const [selectedCompanies, setSelectedCompanies] = useState([]);
     const [selectedParameters, setSelectedParameters] = useState([]);
 
+    const [currentPage, setCurrentPage] = useState(1);
+    const [resetPage, setResetPage] = useState(false);
+    const componentsPerPage = 32;
+
     const handleDataUpdate = (newData) => {
         console.log("NewData = ", newData);
-        let { data, category_name, shops, countries, companies, components_number, parameters } = newData;
-        setSearchResult(data);
+        let { search_result, category_name, shop_list, countries_list, companies_list, count, parameters_dict } = newData;
+        setSearchResult(search_result);
         setCategoryName(category_name);
-        setShopsList(shops);
-        setCountriesList(countries);
-        setCompaniesList(companies);
-        setComponentsNumber(components_number);
-        setParametersList(parameters);
+        setShopsList(shop_list);
+        setCountriesList(countries_list);
+        setComponentsNumber(count);
+        setCompaniesList(companies_list);
+        setParametersList(parameters_dict);
     };
+
+    const handleResetFilter = () => {
+        setSelectedShops([]);
+        setSelectedCountries([]);
+        setSelectedCompanies([]);
+        setSelectedParameters([]);
+    }
+
+    const handleCategoryChange = (newCategory) => {
+        handleResetFilter();
+        setCategory(newCategory);
+    }
 
     // Get data from server
     const fetchData = async () => {
         setIsLoading(true);
         try {
         const data = await fetchComponents(
-            category, selectedShops, selectedCountries, selectedCompanies, selectedParameters, sorting
+            category, currentPage, selectedShops, selectedCountries, selectedCompanies, selectedParameters, sorting
         );
         handleDataUpdate(data);
         } catch (err) {
@@ -158,7 +165,7 @@ export const Categories = (props) => {
         if (category) {
             fetchData();
         }
-    }, [category, selectedShops, selectedCountries, selectedCompanies, selectedParameters, sorting]);
+    }, [category, currentPage, selectedShops, selectedCountries, selectedCompanies, selectedParameters, sorting]);
 
     const handleSortChange = (event) => {
         const sortOption = event.target.value;
@@ -170,67 +177,67 @@ export const Categories = (props) => {
         return (
             <div className="shop">
                 <div className="w3-sidebar w3-bar-block w3-card" style={{ width: '17%', left: 0 }}>
-                    <div align="center">
+                    <div align="center" style={{ paddingTop: "70px" }}>
                         <h4 className="w3-bar-item main-title">Категорії</h4>
                     </div>
 
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Motor")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Motor")}>
                         Мотори
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Propellers")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Propellers")}>
                         Пропелери
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Turn regulator")}>
                         Регулятори обертання
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Flight controller")}>
                         Контроллери польоту
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Stack")}>
                         Стеки
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Battery")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Battery")}>
                         Акумулятори
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Frame")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Frame")}>
                         Каркаси
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Camera")}>
                         Камери
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Video transmitter")}>
                         Відеопередавачі
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("VTX")}>
                         Відеосистеми (VTX)
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("motors")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Receiver")}>
                         Приймачі
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Antenna")}>
                         Антени
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("motors")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Control panel")}>
                         Пульти керування
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("motors")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Glasses")}>
                         Окуляри
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Quadcopter")}>
                         Квадрокоптери
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Hexacopter")}>
                         Гексакоптери
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Octocopter")}>
                         Октокоптери
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px', paddingBottom: '100px' }} onClick={() => handleCategoryChange("Wing")}>
                         Крила
                     </button>
                 </div>
         
-                <div className="product-info" style={{marginLeft: '17%', marginRight: '1%'}}>
+                <div className="product-info" style={{marginLeft: '17%', marginRight: '1%', paddingTop: "70px"}}>
                     <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: "20px"}}>
                         <div className="product-count" style={{
                             fontSize: '1.5rem',
@@ -254,68 +261,68 @@ export const Categories = (props) => {
     if (isLoading) {
         return (
             <div className="shop">
-                <div className="w3-sidebar w3-bar-block w3-card" style={{ width: '17%', left: 0 }}>
+                <div className="w3-sidebar w3-bar-block w3-card" style={{ width: '17%', left: 0, paddingTop: "70px" }}>
                     <div align="center">
                         <h4 className="w3-bar-item main-title">Категорії</h4>
                     </div>
 
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Motor")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Motor")}>
                         Мотори
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Propellers")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Propellers")}>
                         Пропелери
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Turn regulator")}>
                         Регулятори обертання
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Flight controller")}>
                         Контроллери польоту
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Stack")}>
                         Стеки
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Battery")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Battery")}>
                         Акумулятори
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Frame")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Frame")}>
                         Каркаси
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Camera")}>
                         Камери
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Video transmitter")}>
                         Відеопередавачі
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("VTX")}>
                         Відеосистеми (VTX)
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Motor")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Receiver")}>
                         Приймачі
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Antenna")}>
                         Антени
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Motor")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Motor")}>
                         Пульти керування
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Motor")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Glasses")}>
                         Окуляри
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Quadcopter")}>
                         Квадрокоптери
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Hexacopter")}>
                         Гексакоптери
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Octocopter")}>
                         Октокоптери
                     </button>
-                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                    <button className="w3-bar-item w3-button" style={{ fontSize: '18px', paddingBottom: '100px' }} onClick={() => handleCategoryChange("Wing")}>
                         Крила
                     </button>
                 </div>
         
-                <div className="product-info" style={{marginLeft: '17%', marginRight: '1%'}}>
+                <div className="product-info" style={{marginLeft: '17%', marginRight: '1%', paddingTop: "90px"}}>
                     <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: "20px"}}>
                         <div className="product-count" style={{
                             fontSize: '1.5rem',
@@ -335,15 +342,15 @@ export const Categories = (props) => {
             </div>
         )
     }
-
+    
     return (
         <div className="shop">
             <div className="w3-sidebar w3-bar-block w3-card" style={{ width: '17%', left: 0 }}>
-                <div align="center">
+                <div align="center" style={{ paddingTop: "70px" }}>
                     <h4 className="w3-bar-item main-title">Категорії</h4>
                 </div>
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Motor")}>
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Motor")}>
                     Мотори
                 </button>
 
@@ -365,7 +372,7 @@ export const Categories = (props) => {
                     />
                 ) : null }
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Propellers")}>
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Propellers")}>
                     Пропелери
                 </button>
 
@@ -387,15 +394,29 @@ export const Categories = (props) => {
                     />
                 ) : null }
 
-{/*  */}
-
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Turn regulator")}>
                     Регулятори обертання
                 </button>
 
-{/*  */}
+                {category === "Turn regulator" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Flight controller")}>
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Flight controller")}>
                     Контроллери польоту
                 </button>
 
@@ -417,11 +438,29 @@ export const Categories = (props) => {
                     />
                 ) : null }
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Battery")}>
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Stack")}>
                     Стеки
                 </button>
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Battery")}>
+                {category === "Stack" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Battery")}>
                     Акумулятори
                 </button>
 
@@ -443,11 +482,29 @@ export const Categories = (props) => {
                     />
                 ) : null }
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Frame")}>
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Frame")}>
                     Каркаси
                 </button>
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Camera")}>
+                {category === "Frame" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Camera")}>
                     Камери
                 </button>
 
@@ -469,45 +526,225 @@ export const Categories = (props) => {
                     />
                 ) : null }
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Video transmitter")}>
                     Відеопередавачі
                 </button>
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                {category === "Video transmitter" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("VTX")}>
                     Відеосистеми (VTX)
                 </button>
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                {category === "VTX" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Receiver")}>
                     Приймачі
                 </button>
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                {category === "Receiver" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Antenna")}>
                     Антени
                 </button>
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Control panel")}>
+                {category === "Antenna" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Control panel")}>
                     Пульти керування
                 </button>
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Control panel")}>
+                {category === "Control panel" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Glasses")}>
                     Окуляри
                 </button>
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                {category === "Glasses" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Quadcopter")}>
                     Квадрокоптери
                 </button>
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                {category === "Quadcopter" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Hexacopter")}>
                     Гексакоптери
                 </button>
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                {category === "Hexacopter" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Octocopter")}>
                     Октокоптери
                 </button>
 
-                <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => setCategory("Antenna")}>
+                {category === "Octocopter" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
+
+                <button className="w3-bar-item w3-button" style={{ fontSize: '18px', paddingBottom: '100px' }} onClick={() => handleCategoryChange("Wing")}>
                     Крила
                 </button>
+
+                {category === "Wing" ? (
+                    <Filter
+                        category={category}
+                        shops={shopsList}
+                        selectedShops={selectedShops}
+                        setSelectedShops={setSelectedShops}
+                        countries={countriesList}
+                        selectedCountries={selectedCountries}
+                        setSelectedCountries={setSelectedCountries} 
+                        companies={companiesList}
+                        selectedCompanies={selectedCompanies} 
+                        setSelectedCompanies={setSelectedCompanies}
+                        parameters={parametersList}
+                        selectedParameters={selectedParameters}
+                        setSelectedParameters={setSelectedParameters}
+                    />
+                ) : null }
 
             </div>
     
@@ -522,7 +759,7 @@ export const Categories = (props) => {
                         paddingTop: '15px'
                     }}>
 
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: "70px" }}>
                             <div>
                                 {categoryName} ({componentsNumber})
                             </div>
@@ -536,6 +773,15 @@ export const Categories = (props) => {
                                 </select>
                             </div>
                         </div>
+
+                        {componentsNumber / componentsPerPage > 1 && (
+                            <Pagination
+                                componentsNumber={componentsNumber}
+                                componentsPerPage={componentsPerPage}
+                                currentPage={currentPage}
+                                setCurrentPage={setCurrentPage}
+                            />
+                        )}
 
                         <ProductList search_result={searchResult}/>
                     </div>

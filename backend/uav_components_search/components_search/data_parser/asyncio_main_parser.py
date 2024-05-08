@@ -330,25 +330,54 @@ category_requests_by_shop = {
     },
     './components_search/data_parser/component_source_data\\drontech_source_data.json': {},
     './components_search/data_parser/component_source_data\\ekatalog_source_data.json': {},
-    './components_search/data_parser/component_source_data\\flytechnology_source_data.json': {},
+    './components_search/data_parser/component_source_data\\flytechnology_source_data.json': {
+        "Turn regulator": "EXCEPT",
+        "Stack": "польотний контролер aio",
+        "Frame": "EXCEPT"
+    },
     './components_search/data_parser/component_source_data\\fpvua_source_data.json': {},
     './components_search/data_parser/component_source_data\\hotline_source_data.json': {
         "Motor": "EXCEPT",
-        "Camera": "камера для дрона"
+        "Turn regulator": "EXCEPT",
+        "Camera": "камера для дрона",
+        "Battery": "акумулятор для дрона",
+        "Stack": "EXCEPT",
+        "Frame": "EXCEPT",
+        "VTX": "EXCEPT",
+        "Receiver": "EXCEPT",
+        "Control panel": "EXCEPT",
     },
     './components_search/data_parser/component_source_data\\mobileparts_source_data.json': {
         "Camera": "камера fpv"
     },
-    './components_search/data_parser/component_source_data\\modelistam_source_data.json': {},
+    './components_search/data_parser/component_source_data\\modelistam_source_data.json': {
+        "Flight controller": "польотний контролер",
+    },
     './components_search/data_parser/component_source_data\\mydrone_source_data.json': {},
     './components_search/data_parser/component_source_data\\prom_ua_source_data.json': {
         "Motor": "мотор для fpv",
-        "Propellers": "пропелери для дрона"
+        "Propellers": "пропелери для дрона",
+        "Turn regulator": "регулятор ходу дрона",
+        "Battery": "акумулятори для дронов",
+        "Stack": "стек для дрона",
+        "Flight controller": "контролер польоту дрона",
+        "Frame": "рама дрон",
+        "VTX": "відеосистеми для дрона",
+        "Receiver": "приймач для дрона",
+        "Antenna": "антена для дрона",
+        "Control panel": "пульт керування дрона",
+        "Googles": "окуляри для дрона",
+        "Wing": "дрон оперативного"
     },
-    './components_search/data_parser/component_source_data\\pyn_source_data.json': {},
+    './components_search/data_parser/component_source_data\\pyn_source_data.json': {
+        "Turn regulator": "регулятор ходу"
+    },
     './components_search/data_parser/component_source_data\\robostor_source_data.json': {},
     './components_search/data_parser/component_source_data\\runcam_source_data.json': {
-        "Camera": "camera fpv"
+        "Camera": "camera fpv",
+        "Battery": "EXCEPT",
+        "VTX": "kit",
+        "Antenna": "antenna",
     }
 }
 

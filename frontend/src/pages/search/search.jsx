@@ -188,7 +188,7 @@ export const Search = () => {
           />
         </div>
 
-        <div className="product-info" style={{marginLeft: '17%', marginRight: '1%'}}>
+        <div className="product-info" style={{marginLeft: '17%', marginRight: '1%', paddingTop: "90px"}}>
           <div className="input-group" style={{ paddingTop: "10px", paddingBottom: "10px", paddingLeft: "20px", maxWidth: "700px" }}>
             <div className="form-outline">
               <MDBInput id="search-focus component-search-input" type="search" className="form-control" label="Пошук" name="query"/>
@@ -258,7 +258,7 @@ export const Search = () => {
         />
       </div>
 
-      <div className="product-info" style={{marginLeft: '17%', marginRight: '1%'}}>
+      <div className="product-info" style={{marginLeft: '17%', marginRight: '1%', paddingTop: "90px"}}>
         <div className="input-group" style={{ paddingTop: "10px", paddingBottom: "10px", paddingLeft: "20px", maxWidth: "700px" }}>
           <div className="form-outline">
             <MDBInput id="search-focus component-search-input" type="search" className="form-control" label="Пошук" name="query"/>
@@ -333,7 +333,7 @@ export const Search = () => {
         />
       </div>
 
-      <div className="product-info" style={{marginLeft: '17%', marginRight: '1%'}}>
+      <div className="product-info" style={{marginLeft: '17%', marginRight: '1%', paddingTop: "90px"}}>
         <div className="input-group" style={{ paddingTop: "10px", paddingBottom: "10px", paddingLeft: "20px", maxWidth: "700px" }}>
           <div className="form-outline">
             <MDBInput id="search-focus component-search-input" type="search" className="form-control" label="Пошук" name="query"/>

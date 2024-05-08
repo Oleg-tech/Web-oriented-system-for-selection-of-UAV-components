@@ -2,6 +2,8 @@ import os
 import json
 import asyncio
 import concurrent.futures
+
+import unicodedata
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -20,7 +22,7 @@ from .utils import (
     extract_shop_json, insert_parameters, extract_companies, extract_parameters
 )
 from .services import get_redis_connection
-from .api.pagination import ComponentsResultPagination
+from .api.pagination import ComponentsResultPagination, CategoryResultPagination
 from .api.serializers import ComponentSerializer
 from .api.filters import create_result_components_list, get_min_and_max
 from .get_current_exchange_rate import main_exchange_rate
@@ -363,7 +365,7 @@ category_names = {
     "Antenna": "Антени",
     "Control panel": "Пульти керування",
     "Glasses": "Окуляри",
-    "Quadcopters": "Квадрокоптери",
+    "Quadcopter": "Квадрокоптери",
     "Hexacopter": "Гексакоптери",
     "Octocopter": "Октокоптери",
     "Wing": "Крила"
@@ -373,21 +375,48 @@ category_query = {
     "Motor": ["мотор"],
     "Propellers": ["пропелери"],
     "Turn regulator": ["Регулятор обертання"],
-    "Flight controller": ["Контроллери польотів"],
-    "Stack": ["стеки"],
+    "Flight controller": ["польотний контролер"],
+    "Stack": ["стек"],
     "Battery": ["акумулятор"],
-    "Frame": ["каркас"],
+    "Frame": ["рама"],
     "Camera": ["камера"],
     "Video transmitter": ["відеопередавач"],
-    "VTX": ["vtx"],
+    "VTX": ["Відеосистема"],
     "Receiver": ["приймач"],
     "Antenna": ["антена"],
-    "Control panel": ["Пульти керування"],
+    "Control panel": ["пульт керування"],
     "Glasses": ["окуляри"],
-    "Quadcopters": ["квадрокоптер"],
+    "Quadcopter": ["квадрокоптер"],
     "Hexacopter": ["гексакоптер"],
     "Octocopter": ["октокоптер"],
-    "Wing": ["крило"]
+    "Wing": ["бпла крило"]
+}
+
+category_must_be = {
+    "Motor": [
+        "мотор ", "двигун ", "motor "
+    ],
+    "Propellers": [],
+    "Turn regulator": [],
+    "Flight controller": [],
+    "Stack": [],
+    "Battery": [
+        "акумулятор ", "аккумулятор ", "battery "
+    ],
+    "Frame": [],
+    "Camera": [
+        "камера", "camera"
+    ],
+    "Video transmitter": [],
+    "VTX": [],
+    "Receiver": [],
+    "Antenna": [],
+    "Control panel": [],
+    "Glasses": [],
+    "Quadcopter": [],
+    "Hexacopter": [],
+    "Octocopter": [],
+    "Wing": []
 }
 
 category_exceptions = {
@@ -399,8 +428,17 @@ category_exceptions = {
     "Propellers": [
         "плата", "ключ", "дрон ", "рама ", "квадрокоптер ", "сумка ", "гайки ", "двигун "
     ],
+    "Turn regulator": [],
     "Flight controller": [],
-    "Battery": [],
+    "Stack": [
+        "дисплей", "квадрокоптер", "скло", "рама", "стекл"
+    ],
+    "Battery": [
+        "універсальний", "електросамокат", "корпус ", "зварювання ", "пристрій", "iphone", "sigma",
+        "дисплей", "huawei", "ergo", "prestigio", "tecno", "acer", "nomi", "кришка", "квадрокоптер",
+        "пульт", "проектор", "генератор", "окуляри", "стедікам", "станція", "камера", "акумулятора"
+    ],
+    "Frame": [],
     "Camera": [
         "шлейф ", "фіксатор ", "корпус", "квадрокоптер ", "обмежувач повороту ",
         "кріплення ", "кришка ", "демпфер ", "захист підвіса ", "поглинач вібрації",
@@ -408,14 +446,22 @@ category_exceptions = {
         "Экшн-камера ", "action-камера ", "екшн", "екшен", "фотокамера", "вертоліт",
         "гексакоптер", "панорамна камера", "фільтри"
     ],
+    "Video transmitter": [],
+    "VTX": [],
+    "Receiver": [],
     "Antenna": [],
-    "Frame": [],
     "Control panel": [],
-    "Navigation module": []
+    "Glasses": [],
+    "Quadcopter": [],
+    "Hexacopter": [],
+    "Octocopter": [],
+    "Wing": []
 }
 
 
 class FindByCategoryView(APIView):
+    pagination_class = CategoryResultPagination
+
     def post(self, request, *args, **kwargs):
         category_name = request.data.get('category')
 
@@ -440,6 +486,8 @@ class FindByCategoryView(APIView):
         if not category_name:
             return Response({'detail': 'Виберіть категорію для пошуку'}, status=status.HTTP_400_BAD_REQUEST)
 
+        paginator = self.pagination_class()
+
         redis_client = get_redis_connection()
 
         query_recent_request = redis_client.get(f"{category_name}_CATEGORY")
@@ -462,16 +510,18 @@ class FindByCategoryView(APIView):
                 sorting=sorting
             )
 
-            serializer = ComponentSerializer(result_components, many=True)
-            return Response({
-                "data": serializer.data,
-                "components_number": len(serializer.data),
-                "category_name": category_names[category_name],
-                "shops": shops,
-                "countries": countries,
-                "companies": companies,
-                "parameters": parameters
-            })
+            result_page = paginator.paginate_queryset(
+                queryset=result_components,
+                request=request,
+                category=category_names[category_name],
+                shops=shops,
+                countries=countries,
+                companies=companies,
+                parameters=parameters
+            )
+
+            serializer = ComponentSerializer(result_page, many=True)
+            return paginator.get_paginated_response(serializer.data)
         else:
             user_ip = get_user_ip(request)
             result_components = []
@@ -483,6 +533,11 @@ class FindByCategoryView(APIView):
 
                 for new_component in components:
                     result_components.append(new_component)
+
+            components = discard_wrong_by_needed_word(
+                components=components,
+                category=category_name
+            )
 
             result_components = discard_wrong_by_key_word(
                 components=components,
@@ -520,16 +575,18 @@ class FindByCategoryView(APIView):
                 sorting=sorting
             )
 
-            serializer = ComponentSerializer(result_components, many=True)
-            return Response({
-                "data": serializer.data,
-                "components_number": len(serializer.data),
-                "category_name": category_names[category_name],
-                "shops": shops,
-                "countries": countries,
-                "companies": companies,
-                "parameters": parameters
-            })
+            result_page = paginator.paginate_queryset(
+                queryset=result_components,
+                request=request,
+                category=category_names[category_name],
+                shops=shops,
+                countries=countries,
+                companies=companies,
+                parameters=parameters
+            )
+
+            serializer = ComponentSerializer(result_page, many=True)
+            return paginator.get_paginated_response(serializer.data)
 
 
 def run_asyncio_main_parser_category(query, category):
@@ -555,5 +612,24 @@ def discard_wrong_by_key_word(components, category):
 
         if not found_match:
             filtered_components.append(i)
+
+    return filtered_components
+
+
+def discard_wrong_by_needed_word(components, category):
+    key_words = category_must_be[category]
+
+    if len(key_words) == 0:
+        return components
+
+    filtered_components = []
+
+    for component in components:
+        component_name_lower = component["componentName"].lower()
+
+        for key_word in key_words:
+            if key_word.lower() in component_name_lower:
+                filtered_components.append(component)
+                break
 
     return filtered_components

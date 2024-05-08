@@ -5,7 +5,7 @@ import logo from "./drone_to_edit_logo.png";
 
 export const Navbar = () => {
     return (
-        <div className="navbar">
+        <div className="navbar" style={{ position: "fixed", top: "0", width: "100%", zIndex: "1000"}}>
             <div className="links">
                 <Link to="/search">
                     <img src={logo} alt="Home"  style={{ width: '60px', height: 'auto' }}/>

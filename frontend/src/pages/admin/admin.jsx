@@ -62,7 +62,7 @@ export const Admin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchLogin = async () => {
       try {
         const result = await fetchShopsData();
 
@@ -78,7 +78,7 @@ export const Admin = () => {
       }
     };
 
-    fetchData();
+    fetchLogin();
   }, []);
 
   const handleFileChange = async (e) => {
@@ -180,61 +180,61 @@ export const Admin = () => {
 
   return (
     <PrivateRoute>
-    <div className="container" style={{ paddingTop: "20px" }}>
-      {loading ? (
-        <div>Loading...</div>
-      ) : (
-        <div>
+      <div className="container" style={{ paddingTop: "90px" }}>
+        {loading ? (
+          <div>Loading...</div>
+        ) : (
+          <div>
 
-        <div align="center" style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
-          <button className="btn btn-success">Додати</button>
-          <input type="file" style={{ position: 'absolute', top: 0, right: 0, minWidth: '100%', minHeight: '100%', fontSize: '100px', textAlign: 'right', opacity: 0, outline: 'none', cursor: 'inherit' }} onChange={handleFileChange} />
-        </div>
+          <div align="center" style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
+            <button className="btn btn-success">Додати</button>
+            <input type="file" style={{ position: 'absolute', top: 0, right: 0, minWidth: '100%', minHeight: '100%', fontSize: '100px', textAlign: 'right', opacity: 0, outline: 'none', cursor: 'inherit' }} onChange={handleFileChange} />
+          </div>
 
-        <table className="table">
-          <thead className="thead-dark">
-            <tr>
-              <th scope="col">Назва</th>
-              <th scope="col">Посилання</th>
-              <th scope="col">Країна</th>
-              <th scope="col">Завантажити</th>
-              <th scope="col">Редагувати</th>
-              <th scope="col">Видалити</th>
-            </tr>
-          </thead>
-          <tbody className="thead-light">
-            {shops.map(shop => (
-              <tr key={shop.name}>
-                <td>{shop.name}</td>
-                <td>{shop.base_url}</td>
-                <td>{shop.country}</td>
-                <td>
-                  <button className="btn btn-primary" 
-                    onClick={() => handleDownload(shop.base_url)}
-                  >
-                    Завантажити
-                  </button>
-                </td>
-                <td>
-                  <div align="center" style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
-                    <button className="btn btn-warning">Оновити</button>
-                    <input type="file" style={{ position: 'absolute', top: 0, right: 0, minWidth: '100%', minHeight: '100%', fontSize: '100px', textAlign: 'right', opacity: 0, outline: 'none', cursor: 'inherit' }} onChange={(e) => handleSendFile(e, shop.base_url)} />
-                  </div>
-                </td>
-                <td>
-                  <button className="btn btn-danger" 
-                    onClick={() => handleDelete(shop.base_url)}
-                  >
-                    Видалити
-                  </button>
-                </td>
+          <table className="table">
+            <thead className="thead-dark">
+              <tr>
+                <th scope="col">Назва</th>
+                <th scope="col">Посилання</th>
+                <th scope="col">Країна</th>
+                <th scope="col">Завантажити</th>
+                <th scope="col">Редагувати</th>
+                <th scope="col">Видалити</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        </div>
-      )}
-    </div>
+            </thead>
+            <tbody className="thead-light">
+              {shops.map(shop => (
+                <tr key={shop.name}>
+                  <td>{shop.name}</td>
+                  <td>{shop.base_url}</td>
+                  <td>{shop.country}</td>
+                  <td>
+                    <button className="btn btn-primary" 
+                      onClick={() => handleDownload(shop.base_url)}
+                    >
+                      Завантажити
+                    </button>
+                  </td>
+                  <td>
+                    <div align="center" style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
+                      <button className="btn btn-warning">Оновити</button>
+                      <input type="file" style={{ position: 'absolute', top: 0, right: 0, minWidth: '100%', minHeight: '100%', fontSize: '100px', textAlign: 'right', opacity: 0, outline: 'none', cursor: 'inherit' }} onChange={(e) => handleSendFile(e, shop.base_url)} />
+                    </div>
+                  </td>
+                  <td>
+                    <button className="btn btn-danger" 
+                      onClick={() => handleDelete(shop.base_url)}
+                    >
+                      Видалити
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          </div>
+        )}
+      </div>
     </PrivateRoute>
   );
 };

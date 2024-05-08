@@ -66,7 +66,9 @@ export const Filter = ({
   }
 
   return (
-      <div className="filter-container">
+      <div 
+        className="filter-container"
+      >
         {Array.isArray(shops) && shops.length > 0 ? (
         <div style={{ paddingTop: "0" }}>
           <h5 className="w3-bar-item sub-title" style={{ fontSize: "17px", paddingLeft: "30px" }}>Магазини</h5>

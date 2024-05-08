@@ -105,6 +105,98 @@ const filterBatteriesByMotor = (motor, batteries) => {
     return filteredBatteries;
 };
 
+const filterMotorsByTurnRegulator = (turn_regulator, motors) => {
+    turn_regulator = original_turn_regulators[turn_regulator];
+    const turnRegulatorMaxCurrent = turn_regulator["Максимальний струм"] || Infinity;
+    console.log(turn_regulator);
+    const filteredMotors = Object.entries(motors)
+      .filter(([motorName, motorSpecs]) => {
+        console.log(`${motorSpecs["Максимальний струм"]} == ${turnRegulatorMaxCurrent}`);
+        const motorMaxCurrent = motorSpecs["Максимальний струм"] || 0;
+        return motorMaxCurrent <= turnRegulatorMaxCurrent;
+      })
+      .reduce((obj, [key, value]) => {
+        obj[key] = value;
+        return obj;
+      }, {});
+  
+    return filteredMotors;
+};
+
+const filterRegulatorsByMotor = (motor, turn_regulators) => {
+    motor = original_motors[motor];
+    const motorMaxCurrent = motor["Максимальний струм"] || Infinity;
+  
+    const filteredRegulators = Object.entries(turn_regulators)
+      .filter(([regulatorName, regulatorSpecs]) => {
+        const regulatorMaxCurrent = regulatorSpecs["Максимальний струм"] || 0;
+        return regulatorMaxCurrent >= motorMaxCurrent;
+      })
+      .reduce((obj, [key, value]) => {
+        obj[key] = value;
+        return obj;
+      }, {});
+  
+    return filteredRegulators;
+};
+
+const filterMotorsByStack = (stack, motors) => {
+    stack = original_flight_controller_aios[stack];
+    const turnRegulatorMaxCurrent = stack["Максимальний струм"] || Infinity;
+
+    const filteredMotors = Object.entries(motors)
+      .filter(([motorName, motorSpecs]) => {
+        console.log(`${motorSpecs["Максимальний струм"]} == ${turnRegulatorMaxCurrent}`);
+        const motorMaxCurrent = motorSpecs["Максимальний струм"] || 0;
+        return motorMaxCurrent <= turnRegulatorMaxCurrent;
+      })
+      .reduce((obj, [key, value]) => {
+        obj[key] = value;
+        return obj;
+      }, {});
+  
+    return filteredMotors;
+};
+
+const filterStacksByMotor = (motor, stacks) => {
+    motor = original_motors[motor];
+    const motorMaxCurrent = motor["Максимальний струм"] || Infinity;
+  
+    const filteredRegulators = Object.entries(stacks)
+      .filter(([regulatorName, regulatorSpecs]) => {
+        const regulatorMaxCurrent = regulatorSpecs["Максимальний струм"] || 0;
+        return regulatorMaxCurrent >= motorMaxCurrent;
+      })
+      .reduce((obj, [key, value]) => {
+        obj[key] = value;
+        return obj;
+      }, {});
+  
+    return filteredRegulators;
+};
+
+const filterPropellersByMotor = (motor, propellers) => {
+    motor = original_motors[motor];
+    const motorShaftDiameter = motor["Діаметр валу"];
+  
+    const filteredPropellers = Object.entries(propellers)
+      .filter(([propellerName, propellerSpecs]) => {
+        const propellerShaftDiameter = propellerSpecs["Вал"];
+        const minShaftDiameter = motorShaftDiameter;
+        const maxShaftDiameter = motorShaftDiameter + 0.5;
+        return (
+          propellerShaftDiameter >= minShaftDiameter &&
+          propellerShaftDiameter <= maxShaftDiameter
+        );
+      })
+      .reduce((obj, [key, value]) => {
+        obj[key] = value;
+        return obj;
+      }, {});
+  
+    return filteredPropellers;
+};
+
 // Відео
 const original_cameras = {
     "Caddx Ratel 2 V2": {
@@ -121,6 +213,16 @@ const original_cameras = {
         "Тип": "Цифрова",
         "Роздільна здатність": "720p/120 кадрів в секунду",
         "Вага": 3.5
+    },
+    "Foxeer Razer Pico 16:9": {
+        "Тип": "Аналогова",
+        "Роздільна здатність": "1200 TVL",
+        "Вага": 1.65
+    },
+    "RunCam Nano 4": {
+        "Тип": "Аналогова",
+        "Роздільна здатність": "800 TVL",
+        "Вага": 1.5
     }
 };
 
@@ -137,6 +239,27 @@ const original_vtxs = {
         "Частота": 5.8,
         "Формат відео": "NTSC / PAL",
         "Вага": 8.7
+    },
+    "BETAFPV M03 5,8G": {
+        "Тип": "Аналогова",
+        "Вихідна потужність": "PIT/25/100/200/400 мВт (V1.1, регульована)",
+        "Частота": 5.8,
+        "Формат відео": "NTSC / PAL",
+        "Вага": 1.1
+    },
+    "AKK Race Ranger 1.6W 5.8GHz 48CH": {
+        "Тип": "Аналогова",
+        "Вихідна потужність": "200mW/400mW/800mW/1600mW",
+        "Частота": 5.8,
+        "Формат відео": "NTSC / PAL",
+        "Вага": 16.8
+    },
+    "Foxeer Reaper Infinity VTX 5W 5.8Ghz 40Ch": {
+        "Тип": "Аналогова",
+        "Вихідна потужність": "25мВт/500мВт/1500мВт/3000мВт/5000мВт",
+        "Частота": 5.8,
+        "Формат відео": "NTSC / PAL",
+        "Вага": 58.0
     }
 }
 
@@ -145,6 +268,26 @@ const original_video_systems = {
         "Тип": "Цифрова",
         "Частота": 5.8,
         "Вага": 35.0
+    },
+    "Caddx Walksnail Avatar mini": {
+        "Тип": "Цифрова",
+        "Частота": 5.8,
+        "Вага": 7.4
+    },
+    "RunCam Airunit WASP": {
+        "Тип": "Цифрова",
+        "Частота": 5.8,
+        "Вага": 33.0
+    },
+    "Caddx Walksnail Avatar HD Mini": {
+        "Тип": "Цифрова",
+        "Частота": 5.8,
+        "Вага": 10.3
+    },
+    "RunCam Link Wasp Nano": {
+        "Тип": "Цифрова",
+        "Частота": 5.8,
+        "Вага": 25.5
     }
 }
 
@@ -173,16 +316,44 @@ const original_turn_regulators = {
         "Робоча напруга": "16.8-25.2 В",
         "Максимальний струм": 66,
         "Вага": 14.0
+    },
+    "60A 2-6S Li-po HOBBYWING SKY WALKER": {
+        "Тип": "Одинарний",
+        "Робоча напруга": "7.4-22.2 В",
+        "Максимальний струм": 60,
+        "Вага": 14.0
     }
 }
 
 const original_flight_controllers = {
     "SpeedyBee F405 V3 BLS 50A": {
-        "Максимальний струм": 55,
+        // "Максимальний струм": 55,
         "Робоча напруга": "7.0-22.0 В",
         "Процесор":	"STM32F722",
         "Вага": 9.0
     },
+    "Happymodel CrazyF411 ELRS": {
+        // "Максимальний струм": 25,
+        "Робоча напруга": "7.0-17.0 В",
+        "Процесор":	"STM32F411CEU6",
+        "Вага": 4.9
+    },
+    "iFlight SucceX-D Mini F7 TwinG": {
+        // "Максимальний струм": 25,
+        "Робоча напруга": "5.0-26.0 В",
+        "Процесор":	"STM32F722RET6",
+        "Вага": 6.5
+    },
+    "JHEMCU GF30F722 ICM F722, 30x30 BS-03": {
+        "BEC": "5В 2.5А - 10В 2А",
+        "Процесор":	"STM32F722RET6",
+        "Вага": 8.8
+    },
+    "Happymodel DiamondF4 ELRS": {
+        "BEC": "5В 1.0А",
+        "Процесор":	"STM32F411CEU6",
+        "Вага": 3.4
+    }
 }
 
 const original_flight_controller_aios = {
@@ -198,7 +369,50 @@ const original_flight_controller_aios = {
         "Вага": 20.5,
         "Буззер": false
     },
+    "BETAFPV F4 1S 12A AIO 2022": {
+        "Максимальний струм": 25,
+        "Робоча напруга": "3.7-7.4 В",
+        "Процесор": "STM32F411CEU6",
+        "Вага": 4.74,
+        "Буззер": false
+    },
+    "Happymodel ELRS F4 2G4 AIO": {
+        "Максимальний струм": 6,
+        "Робоча напруга": "2.9-4.5 В",
+        "Процесор": "STM32F411CEU6",
+        "Вага": 4.57,
+        "Буззер": false
+    },
+    "FlashHobby F405 (BLS 60A, 30.5x30.5, 4-in-1ESC)": {
+        "Максимальний струм": 60,
+        "Робоча напруга": "11.1-22.2 В",
+        "Процесор": "STM32F405",
+        "Вага": 7.5,
+        "Буззер": false
+    }
 }
+
+const filterMotorsByPropeller = (propeller, motors) => {
+    propeller = original_propellers[propeller];
+    const propellerShaftDiameter = propeller["Вал"];
+  
+    const filteredMotors = Object.entries(motors)
+      .filter(([motorName, motorSpecs]) => {
+        const motorShaftDiameter = motorSpecs["Діаметр валу"];
+        const minShaftDiameter = propellerShaftDiameter;
+        const maxShaftDiameter = propellerShaftDiameter + 0.5;
+        return (
+          motorShaftDiameter >= minShaftDiameter &&
+          motorShaftDiameter <= maxShaftDiameter
+        );
+      })
+      .reduce((obj, [key, value]) => {
+        obj[key] = value;
+        return obj;
+      }, {});
+  
+    return filteredMotors;
+};
 
 // Матеріальні компоненти
 const original_propellers = {
@@ -207,10 +421,40 @@ const original_propellers = {
         "Крок": 4,
         "Лопаті": 3,
         "Матеріал": "полікарбонат",
-        "Діаметр маточини": "13.5 мм",
-        "Товщина маточини": "7 мм",
-        "Вал": "M5",
+        "Вал": 5.0,
         "Вага": 9.1
+    },
+    "Gemfan 31mm 1208-3 1.5мм": {
+        "Діаметр пропелера": "31 мм",
+        "Крок": 0.8,
+        "Лопаті": 3,
+        "Матеріал": "полікарбонат",
+        "Вал": 1.5,
+        "Вага": 0.21
+    },
+    "HQprop 7040": {
+        "Діаметр": "7 дюймів",
+        "Крок": 4,
+        "Лопаті": 3,
+        "Матеріал": "полікарбонат",
+        "Вага": 9.1,
+        "Вал": 5.0
+    },
+    "Gemfan 8040": {
+        "Діаметр пропелера": "8 дюймів",
+        "Крок": 4.0,
+        "Лопаті": 3,
+        "Матеріал": "армований полікарбонат",
+        "Вал": 5.0,
+        "Вага": 10.5
+    },
+    "GemFan 8060-3": {
+        "Діаметр пропелера": "8 дюймів",
+        "Крок": 6.0,
+        "Лопаті": 3,
+        "Матеріал": "армований нейлон",
+        "Вал": 5.0,
+        "Вага": 10.5
     }
 }
 
@@ -218,12 +462,47 @@ const original_motors = {
     "T-Motor F40 Pro II 2400KV": {
         "Максимальний струм": 49.62,
         "Робоча напруга": "11.1-14.8 В",
+        "Діаметр валу": 4.0,
+        "Максимальна потужність": "745.8 Вт",
+        "Рекомендовані пропелери": "-",
+        "Рекомендована батарея": "3S Li-Po",
         "Вага": 27.5
     },
     "Emax ECO II 2807 1300KV": {
         "Максимальний струм": 50.0,
         "Робоча напруга": "11.1-22.2 В",
+        "Діаметр валу": 5.0,
+        "Максимальна потужність": "1310 Вт",
+        "Рекомендовані пропелери": "6 дюймів",
+        "Рекомендована батарея": "3-6s LiPo",
         "Вага": 47.6
+    },
+    "BETAFPV 1102 37mm (2022) 14000KV": {
+        "Максимальний струм": 10.1,
+        "Робоча напруга": "11.1-14.8 В",
+        "Діаметр валу": 1.5,
+        "Максимальна потужність": "80.8 Вт",
+        "Рекомендовані пропелери": "40 мм",
+        "Рекомендована батарея": "1S Lipo",
+        "Вага": 2.95
+    },
+    "Happymodel SE0802 22000KV": {
+        "Максимальний струм": 4.0,
+        "Робоча напруга": "11.1-14.8 В",
+        "Діаметр валу": 1.0,
+        "Максимальна потужність": "14.9 Вт",
+        "Рекомендовані пропелери": "",
+        "Рекомендована батарея": "1-2S LiPo",
+        "Вага": 1.9
+    },
+    "T-Motor VELOX VELOCE V2207.5 V2 2550KV": {
+        "Максимальний струм": 4.0,
+        "Робоча напруга": "11.1-14.8 В",
+        "Діаметр валу": 1.0,
+        "Максимальна потужність": "557 Вт",
+        "Рекомендовані пропелери": "5 дюймів",
+        "Рекомендована батарея": "4 - 6S",
+        "Вага": 35.6
     }
 }
 
@@ -271,6 +550,18 @@ const original_receivers = {
         "Робоча частота": [2450],
         "Робоча напруга": "3.5-10.0 В",
         "Вага": 14.8
+    },
+    "ELRS Lite RX": {
+        "Протокол зв'язку": "ELRS",
+        "Робоча частота": [2400, 2500],
+        "Робоча напруга": "5.0 В",
+        "Вага": 0.44
+    },
+    "BETAFPV ELRS Lite Receiver": {
+        "Протокол зв'язку": "ELRS",
+        "Робоча частота": [2400],
+        "Робоча напруга": "5.0 В",
+        "Вага": 1.0
     }
 }
 
@@ -284,6 +575,21 @@ const original_antennas = {
         "Довжина": 75,
         "Робоча частота": [915],
         "Вага": 2.6
+    },
+    "Happymodel IPEX-MHF3 RX 2.4G": {
+        "Довжина": 100,
+        "Робоча частота": [2400],
+        "Вага": 8.5
+    },
+    "TrueRC SINGULARITY 2.4 V1 SMA90 RHCP": {
+        "Довжина": 96,
+        "Робоча частота": [2400],
+        "Вага": 9.45
+    },
+    "Foxeer Lollipop 4 Plus 2.6dBi SMA RHCP": {
+        "Довжина": 150,
+        "Робоча частота": [5800],
+        "Вага": 10.5
     }
 }
 
@@ -301,7 +607,6 @@ export const KitsCompare = (props) => {
 
     const [selectedMotor, setSelectedMotor] = useState(null);
     const [selectedPropeller, setSelectedPropeller] = useState(null);
-    const [selectedBattery, setSelectedBattery] = useState(null);
 
     const [cameras, setCameras] = useState([]);
     const [vtxs, setVTXs] = useState([]);
@@ -313,7 +618,7 @@ export const KitsCompare = (props) => {
     const [antennas, setAntennas] = useState([]);
     const [motors, setMotors] = useState([]);
     const [propellers, setPropellers] = useState([]);
-    const [batteries, setBatteries] = useState([]);
+    const [amount, setAmount] = useState([]);
 
     const [result, setResult] = useState(null);
 
@@ -328,7 +633,6 @@ export const KitsCompare = (props) => {
         setAntennas(original_antennas);
         setMotors(original_motors);
         setPropellers(original_propellers);
-        setBatteries(original_batteries);
     }, []);
 
     const handleCameraChange = (cameraName) => {
@@ -360,6 +664,9 @@ export const KitsCompare = (props) => {
         setSelectedVTX(null);
         
         setSelectedVideoSystem(videoSystemName);
+
+        setCameras(original_cameras);
+        setVTXs(original_vtxs);
     };
 
     /////////////////////////////// 
@@ -369,12 +676,8 @@ export const KitsCompare = (props) => {
 
         setSelectedTurnRegulator(turn_regulator);
 
-        // const selectedCamera = cameras[cameraName];
-        // const cameraType = selectedCamera.Тип;
-        // const filteredVTXs = filterVTXsByType(cameraType, original_vtxs);
-      
-        // setVTXs(filteredVTXs);
-
+        const filetered_motors = filterMotorsByTurnRegulator(turn_regulator, original_motors);
+        setMotors(filetered_motors);
     }
 
     const handleFlightControllerChange = (flight_controller) => {
@@ -388,6 +691,12 @@ export const KitsCompare = (props) => {
         setSelectedFlightController(null);
 
         setSelectedFlightControllerAIO(flight_controller_aio);
+
+        setFlightControllers(original_flight_controllers);
+        setTurnRegulators(original_turn_regulators);
+
+        const filetered_motors = filterMotorsByStack(flight_controller_aio, original_motors);
+        setMotors(filetered_motors);
     }
 
     //////////////////////////////
@@ -415,22 +724,30 @@ export const KitsCompare = (props) => {
     const handleMotorChange = (motor) => {
         setSelectedMotor(motor);
 
-        const selectedMotor = original_motors[motor];
-        const filteredBatteries = filterBatteriesByMotor(selectedMotor, original_batteries);
-      
-        setBatteries(filteredBatteries);
+        const filetered_regulators = filterRegulatorsByMotor(motor, original_turn_regulators);
+        setTurnRegulators(filetered_regulators);
+
+        const filtered_stacks = filterStacksByMotor(motor, original_flight_controller_aios);
+        setFlightControllerAIOs(filtered_stacks);
+
+        const filtered_propellers = filterPropellersByMotor(motor, original_propellers);
+        setPropellers(filtered_propellers);
     }
 
     const handlePropellerChange = (propeller) => {
         setSelectedPropeller(propeller);
+
+        const filtered_motors = filterMotorsByPropeller(propeller, original_motors);
+        setMotors(filtered_motors);
     }
 
-    const handleBatteryChange = (battery) => {
-        setSelectedBattery(battery);
-    }
+    // const handleBatteryChange = (battery) => {
+    //     setSelectedBattery(battery);
+    // }
 
     const handleButtonClick = () => {
         const result = {};
+        const buf_amount = [];
         let totalWeight = 0;
       
         const addElementToResult = (element, key) => {
@@ -451,17 +768,42 @@ export const KitsCompare = (props) => {
         addElementToResult(flight_controller_aios[selectedFlightControllerAIO], "Польотний контролер AIO");
         addElementToResult(antennas[selectedAntenna], "Антена");
         addElementToResult(motors[selectedMotor], "Мотор");
-        addElementToResult(propellers[selectedPropeller], "Пропелер");
-        addElementToResult(batteries[selectedBattery], "Батарея");
+        addElementToResult(propellers[selectedTurnRegulator], "Пропелер");
 
         setResult({ data: result, totalWeight });
+
+        
+        buf_amount[cameras[selectedCamera]] = 1;
+        buf_amount[vtxs[selectedVTX]] = 1;
+        buf_amount[video_systems[selectedVideoSystem]] = 1;
+        buf_amount[receivers[selectedReceiver]] = 1;
+
+        // 1 or 4
+        if (turn_regulators[selectedTurnRegulator] != null) {
+            if (turn_regulators[selectedTurnRegulator].Тип == "Одинарний") {
+                buf_amount[turn_regulators[selectedTurnRegulator]] = 1;
+            }
+            else if (turn_regulators[selectedTurnRegulator].Тип == "4") {
+                buf_amount[turn_regulators[selectedTurnRegulator]] = 4;
+            }
+        }
+
+        buf_amount[flight_controllers[selectedFlightController]] = 1;
+        buf_amount[flight_controller_aios[selectedFlightControllerAIO]] = 1;
+        buf_amount[antennas[selectedAntenna]] = 1;
+        buf_amount[motors[selectedMotor]] = 4
+        buf_amount[propellers[selectedPropeller]] = 4;
+
+        setAmount(buf_amount);
     }
 
     return (
-        <div>
-            <div style={{ width: "min-content", display: "flex", flexDirection: "row", marginTop: "30px", marginLeft: "250px" }}>
-                <div>
-                    <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Камера</span>
+        <div style={{ paddingTop: "70px" }}>
+            <div style={{ display: "flex", flexDirection: "row", marginTop: "30px", marginLeft: "100px" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "450px" }}>
+                    <span className="w3-bar-item main-title" style={{ marginTop: "15px", fontSize: "30px" }}>
+                        Камера
+                    </span>
                     {Object.keys(cameras).map((cameraName, index) => (
                         <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
                             <label className="custom-checkbox">
@@ -481,7 +823,7 @@ export const KitsCompare = (props) => {
                 
                 {/* /////////////  Відеопередавач  ////////////// */}
 
-                <div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "450px" }}>
                     <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Відеопередавач (VTX)</span>
                     {Object.keys(vtxs).map((vtx, index) => (
                         <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
@@ -502,7 +844,7 @@ export const KitsCompare = (props) => {
             
                 {/* /////////////  Відеосистема  ////////////// */}
 
-                <div style={{ width: "min-content" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "450px" }}>
                     <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Відеосистема</span>
                     {Object.keys(video_systems).map((video_system, index) => (
                         <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
@@ -524,8 +866,8 @@ export const KitsCompare = (props) => {
 
             {/* /////////////  Регулятор обертання  ////////////// */}
 
-            <div style={{ width: "min-content", display: "flex", flexDirection: "row", marginTop: "30px", marginLeft: "250px" }}>
-                <div>
+            <div style={{ width: "min-content", display: "flex", flexDirection: "row", marginTop: "30px", marginLeft: "100px" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "450px" }}>
                     <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Регулятор обертання (ESC)</span>
                     {Object.keys(turn_regulators).map((turn_regulator, index) => (
                         <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
@@ -546,7 +888,7 @@ export const KitsCompare = (props) => {
                 
                 {/* /////////////  Польотний контролер  ////////////// */}
 
-                <div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "450px" }}>
                     <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Польотний контролер</span>
                     {Object.keys(flight_controllers).map((flight_controller, index) => (
                         <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
@@ -567,8 +909,8 @@ export const KitsCompare = (props) => {
             
                 {/* /////////////  Польотний контролер (AIO)  ////////////// */}
 
-                <div style={{ width: "min-content" }}>
-                    <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Польотний контролер (AIO)</span>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "450px" }}>
+                    <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Стек (AIO)</span>
                     {Object.keys(flight_controller_aios).map((flight_controller_aio, index) => (
                         <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
                             <label className="custom-checkbox">
@@ -589,8 +931,8 @@ export const KitsCompare = (props) => {
 
             {/* ////////  Приймач  //////// */}
 
-            <div style={{ width: "min-content", display: "flex", flexDirection: "row", marginTop: "30px", marginLeft: "250px" }}>
-                <div>
+            <div style={{ width: "min-content", display: "flex", flexDirection: "row", marginTop: "30px", marginLeft: "100px" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "450px" }}>
                     <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Приймачі сигналу</span>
                     {Object.keys(receivers).map((receiver, index) => (
                         <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
@@ -611,7 +953,7 @@ export const KitsCompare = (props) => {
 
                 {/* ////////  Антена  /////// */}
 
-                <div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "450px" }}>
                     <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Антени</span>
                     {Object.keys(antennas).map((antenna, index) => (
                         <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
@@ -632,7 +974,7 @@ export const KitsCompare = (props) => {
 
                 {/* {/////////  Мотор  //////////} */}
 
-                <div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "450px" }}>
                     <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Мотори</span>
                     {Object.keys(motors).map((motor, index) => (
                         <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
@@ -654,8 +996,8 @@ export const KitsCompare = (props) => {
 
             {/* //////// Пропелер /////// */}
 
-            <div style={{ width: "min-content", display: "flex", flexDirection: "row", marginTop: "30px", marginLeft: "250px" }}>
-                <div>
+            <div style={{ width: "min-content", display: "flex", flexDirection: "row", marginTop: "30px", marginLeft: "100px" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", width: "450px" }}>
                     <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Пропелери</span>
                     {Object.keys(propellers).map((propeller, index) => (
                         <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
@@ -676,7 +1018,7 @@ export const KitsCompare = (props) => {
 
                 {/* /////////////  Батарея  ////////////// */}
 
-                <div>
+                {/* <div>
                     <span style={{ marginTop: "15px", fontSize: "30px" }} className="w3-bar-item main-title">Батарея</span>
                     {Object.keys(batteries).map((battery, index) => (
                         <li key={index} className="w3-bar-item w3-button" style={{ paddingBottom: "2px", paddingTop: "2px", fontSize: "20px" }}>
@@ -693,7 +1035,7 @@ export const KitsCompare = (props) => {
                             </label>
                         </li>
                     ))}
-                </div>
+                </div> */}
             </div>
             
             <div style={{ paddingTop: "50px", paddingBottom: "50px", paddingLeft: "40%" }}>
@@ -708,18 +1050,29 @@ export const KitsCompare = (props) => {
 
             {result && (
                 <div className="result">
-                    <h2>Конфігурація FPV дрона</h2>
-                    {Object.entries(result.data).map(([key, value]) => (
-                        <div key={key}>
-                            <h3>{key}</h3>
-                            <ul>
-                                {Object.entries(value).map(([prop, val]) => (
-                                    <li key={prop}>{prop}: {val}</li>
-                                ))}
-                            </ul>
-                        </div>
-                    ))}
-                    <h3>Сумарна вага: {result.totalWeight}</h3>
+                    <div>
+                        <h2>Вихідні характеристики квадрокоптера</h2>
+                        {Object.entries(result.data).map(([key, value]) => (
+                            <div key={key}>
+                                <h3>{key}</h3>
+                                <ul>
+                                    {Object.entries(value).map(([prop, val]) => (
+                                        <li key={prop}>{prop}: {val}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ))}
+                        <h3>Сумарна вагавідібраних комплектуючих: {result.totalWeight}</h3>
+                    </div>
+                    <div>
+                        <h2>Список необхідних комплектуючих</h2>
+                        {Object.entries(amount.data).map(([key, value]) => (
+                            <div key={key}>
+                                <h3>{key}</h3>
+                                <h3>{value}</h3>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             )}
         </div>

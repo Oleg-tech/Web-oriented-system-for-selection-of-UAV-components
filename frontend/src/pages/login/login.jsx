@@ -15,16 +15,18 @@ export const LoginForm = () => {
 
     try {
         const response = await axios.post('http://127.0.0.1:8000/components/api/token/',
-            {
-                "username": username,
-                "password": password,
-            }
+          {
+            "username": username,
+            "password": password,
+          }
         );
     
         if (response.status === 200) {
           const { access, refresh } = response.data;
           localStorage.setItem('accessToken', access);
           localStorage.setItem('refreshToken', refresh);
+          localStorage.setItem('isAuthenticated', 'true');
+
           navigate('/admin');
       } else {
         setErrorMessage('Неправильний логін або пароль');
@@ -36,7 +38,7 @@ export const LoginForm = () => {
   };
 
   return (
-<div className="container">
+    <div className="container" style={{ paddingTop: "70px" }}>
       <div className="row justify-content-center mt-5">
         <div className="col-md-4">
           <div className="card bg-light">
