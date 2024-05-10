@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import * as XLSX from 'xlsx';
 import { MDBInput, MDBBtn } from 'mdb-react-ui-kit';
 import { fetchProducts, fetchDownloadComponents } from "./products";
@@ -12,6 +13,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 
 import "./component-card.css";
+import "./add-animation.css";
 
 const ProductList = ({ search_result }) => {
   return (
@@ -291,9 +293,15 @@ export const Search = () => {
           fontSize: "30px",
           lineHeight: "1.5",
           fontWeight: "bold",
-          color: "#333" }}
+          color: "#333",
+          position: "relative" }}
         >
-          Зачекайте, відбувається пошук комплектуючих...
+          Зачекайте, відбувається пошук
+          <div className="loading-dots">
+              <span className="dot"></span>
+              <span className="dot"></span>
+              <span className="dot"></span>
+          </div>
         </div>
       </div>
     </div>
@@ -396,15 +404,22 @@ export const Search = () => {
       </div>
 
       {componentsNumber / componentsPerPage > 1 && (
-        <div style={{ paddingLeft: "17%" }}>
-          <Pagination
-            componentsNumber={componentsNumber}
-            componentsPerPage={componentsPerPage}
-            currentPage={currentPage}
-            setCurrentPage={setCurrentPage}
-          />
-        </div>
-      )}
+  <div style={{ paddingLeft: "17%", display: "flex", alignItems: "center" }}>
+    <div>
+      <Pagination
+        componentsNumber={componentsNumber}
+        componentsPerPage={componentsPerPage}
+        currentPage={currentPage}
+        setCurrentPage={setCurrentPage}
+      />
+    </div>
+
+    <div style={{ marginLeft: "auto", paddingBottom: "20px", paddingRight: "55px" }}>
+      <Link to="/feedback" className="btn btn-danger">Повідомити про проблему</Link>
+    </div>
+  </div>
+)}
+
     </div>
   );
 };

@@ -21,3 +21,10 @@ class Component(models.Model):
     component_company = models.CharField(max_length=100, null=False, blank=False)
     component_type = models.CharField(max_length=50, null=False, blank=False)
     component_parameters = models.JSONField(null=False, blank=False)
+
+
+class UserMassage(models.Model):
+    message_email = models.CharField(max_length=100, null=False, blank=False)
+    message_user_ip = models.CharField(max_length=100, null=True, blank=True, default=None)
+    message_text = models.CharField(max_length=250, null=False, blank=False)
+    message_is_checked = models.BooleanField(default=False)

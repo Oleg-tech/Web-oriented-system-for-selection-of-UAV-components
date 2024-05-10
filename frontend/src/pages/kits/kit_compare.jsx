@@ -466,7 +466,11 @@ const original_motors = {
         "Максимальна потужність": "745.8 Вт",
         "Рекомендовані пропелери": "-",
         "Рекомендована батарея": "3S Li-Po",
-        "Вага": 27.5
+        "Вага": 27.5,
+        "Діаметр мотору": "27.9 мм.",
+        "Розмір отвору вала": "5 мм.",
+        "Діаметр кріпильних отворів": "М3",
+        "Відстань кріпильних отворів від центру": "16 мм."
     },
     "Emax ECO II 2807 1300KV": {
         "Максимальний струм": 50.0,
@@ -475,16 +479,24 @@ const original_motors = {
         "Максимальна потужність": "1310 Вт",
         "Рекомендовані пропелери": "6 дюймів",
         "Рекомендована батарея": "3-6s LiPo",
-        "Вага": 47.6
+        "Вага": 47.6,
+        "Діаметр мотору": "33.9 мм.",
+        "Розмір отвору вала": "4 мм.",
+        "Діаметр кріпильних отворів": "М3",
+        "Відстань кріпильних отворів від центру": "19 мм."
     },
-    "BETAFPV 1102 37mm (2022) 14000KV": {
-        "Максимальний струм": 10.1,
-        "Робоча напруга": "11.1-14.8 В",
-        "Діаметр валу": 1.5,
-        "Максимальна потужність": "80.8 Вт",
-        "Рекомендовані пропелери": "40 мм",
-        "Рекомендована батарея": "1S Lipo",
-        "Вага": 2.95
+    "T-Motor F40 PRO III 2306.5 1600KV": {
+        "Максимальний струм": 37.3,
+        "Робоча напруга": "14.8-22.2 В",
+        "Діаметр валу": 4.0,
+        "Максимальна потужність": "750.0 Вт",
+        "Рекомендовані пропелери": "GF5149-3\", GF5150-3\", GF5152-3",
+        "Рекомендована батарея": "4-6S",
+        "Вага": 33.5,
+        "Діаметр мотору": "27.9 мм.",
+        "Розмір отвору вала": "4 мм.",
+        "Діаметр кріпильних отворів": "М3",
+        "Відстань кріпильних отворів від центру": "16 мм."
     },
     "Happymodel SE0802 22000KV": {
         "Максимальний струм": 4.0,
@@ -493,7 +505,11 @@ const original_motors = {
         "Максимальна потужність": "14.9 Вт",
         "Рекомендовані пропелери": "",
         "Рекомендована батарея": "1-2S LiPo",
-        "Вага": 1.9
+        "Вага": 1.9,
+        "Діаметр мотору": "10.5 мм.",
+        "Розмір отвору вала": "1 мм.",
+        "Діаметр кріпильних отворів": "М1.4",
+        "Відстань кріпильних отворів від центру": "6.5 мм."
     },
     "T-Motor VELOX VELOCE V2207.5 V2 2550KV": {
         "Максимальний струм": 4.0,
@@ -502,7 +518,11 @@ const original_motors = {
         "Максимальна потужність": "557 Вт",
         "Рекомендовані пропелери": "5 дюймів",
         "Рекомендована батарея": "4 - 6S",
-        "Вага": 35.6
+        "Вага": 35.6,
+        "Діаметр мотору": "27.6 мм.",
+        "Розмір отвору вала": "М5",
+        "Діаметр кріпильних отворів": "М3",
+        "Відстань кріпильних отворів від центру": "16 мм."
     }
 }
 
@@ -618,9 +638,13 @@ export const KitsCompare = (props) => {
     const [antennas, setAntennas] = useState([]);
     const [motors, setMotors] = useState([]);
     const [propellers, setPropellers] = useState([]);
-    const [amount, setAmount] = useState([]);
-
+    
     const [result, setResult] = useState(null);
+
+    const [amount, setAmount] = useState(null);
+
+    const [batteryCapacity, setBatteryCapacity] = useState(null);
+    const [batteryParameters, setBatteryParameters] = useState(null);
 
     useEffect (() => {
         setCameras(original_cameras);
@@ -724,6 +748,18 @@ export const KitsCompare = (props) => {
     const handleMotorChange = (motor) => {
         setSelectedMotor(motor);
 
+        const originalMotor = original_motors[motor];
+        setBatteryCapacity(originalMotor["Рекомендована батарея"]);
+
+        setBatteryParameters(
+            {
+                "Діаметр мотору": originalMotor["Діаметр мотору"],
+                "Розмір отвору вала": originalMotor["Розмір отвору вала"],
+                "Діаметр кріпильних отворів": originalMotor["Діаметр кріпильних отворів"],
+                "Відстань кріпильних отворів від центру": originalMotor["Відстань кріпильних отворів від центру"]
+            }
+        )
+
         const filetered_regulators = filterRegulatorsByMotor(motor, original_turn_regulators);
         setTurnRegulators(filetered_regulators);
 
@@ -747,7 +783,7 @@ export const KitsCompare = (props) => {
 
     const handleButtonClick = () => {
         const result = {};
-        const buf_amount = [];
+        const buf_amount = {};
         let totalWeight = 0;
       
         const addElementToResult = (element, key) => {
@@ -758,43 +794,56 @@ export const KitsCompare = (props) => {
             }
           }
         };
-      
-        addElementToResult(cameras[selectedCamera], "Камера");
-        addElementToResult(vtxs[selectedVTX], "Відеопередавач");
-        addElementToResult(video_systems[selectedVideoSystem], "Відеосистема");
-        addElementToResult(receivers[selectedReceiver], "Приймач");
-        addElementToResult(turn_regulators[selectedTurnRegulator], "Регулятор обертів");
-        addElementToResult(flight_controllers[selectedFlightController], "Польотний контролер");
-        addElementToResult(flight_controller_aios[selectedFlightControllerAIO], "Польотний контролер AIO");
-        addElementToResult(antennas[selectedAntenna], "Антена");
-        addElementToResult(motors[selectedMotor], "Мотор");
-        addElementToResult(propellers[selectedTurnRegulator], "Пропелер");
 
-        setResult({ data: result, totalWeight });
-
-        
-        buf_amount[cameras[selectedCamera]] = 1;
-        buf_amount[vtxs[selectedVTX]] = 1;
-        buf_amount[video_systems[selectedVideoSystem]] = 1;
-        buf_amount[receivers[selectedReceiver]] = 1;
-
-        // 1 or 4
-        if (turn_regulators[selectedTurnRegulator] != null) {
-            if (turn_regulators[selectedTurnRegulator].Тип == "Одинарний") {
-                buf_amount[turn_regulators[selectedTurnRegulator]] = 1;
-            }
-            else if (turn_regulators[selectedTurnRegulator].Тип == "4") {
-                buf_amount[turn_regulators[selectedTurnRegulator]] = 4;
+        if (cameras[selectedCamera] && typeof cameras[selectedCamera] === 'object') {
+            addElementToResult(cameras[selectedCamera], "Камера");
+            buf_amount[selectedCamera] = 1;
+        }
+        if (vtxs[selectedVTX] && typeof vtxs[selectedVTX] === 'object') {
+            addElementToResult(vtxs[selectedVTX], "Відеопередавач");
+            buf_amount[selectedVTX] = 1;
+        }
+        if (video_systems[selectedVideoSystem] && typeof video_systems[selectedVideoSystem] === 'object') {
+            addElementToResult(video_systems[selectedVideoSystem], "Відеосистема");
+            buf_amount[selectedVideoSystem] = 1;
+        }
+        if (receivers[selectedReceiver] && typeof receivers[selectedReceiver] === 'object') {
+            addElementToResult(receivers[selectedReceiver], "Приймач");
+            buf_amount[selectedReceiver] = 1;
+        }
+        if (turn_regulators[selectedTurnRegulator] && typeof turn_regulators[selectedTurnRegulator] === 'object') {
+            addElementToResult(turn_regulators[selectedTurnRegulator], "Регулятор обертів");
+            if (turn_regulators[selectedTurnRegulator].Тип === "Одинарний") {
+                buf_amount[selectedTurnRegulator] = 1;
+            } else if (turn_regulators[selectedTurnRegulator].Тип === "4") {
+                buf_amount[selectedTurnRegulator] = 4;
             }
         }
+        if (flight_controllers[selectedFlightController] && typeof flight_controllers[selectedFlightController] === 'object') {
+            addElementToResult(flight_controllers[selectedFlightController], "Польотний контролер");
+            buf_amount[selectedFlightController] = 1;
+        }
+        if (flight_controller_aios[selectedFlightControllerAIO] && typeof flight_controller_aios[selectedFlightControllerAIO] === 'object') {
+            addElementToResult(flight_controller_aios[selectedFlightControllerAIO], "Польотний контролер AIO");
+            buf_amount[selectedFlightControllerAIO] = 1;
+        }
+        if (antennas[selectedAntenna] && typeof antennas[selectedAntenna] === 'object') {
+            addElementToResult(antennas[selectedAntenna], "Антена");
+            buf_amount[selectedAntenna] = 1;
+        }
+        if (motors[selectedMotor] && typeof motors[selectedMotor] === 'object') {
+            addElementToResult(motors[selectedMotor], "Мотор");
+            buf_amount[selectedMotor] = 4;
+        }
+        if (propellers[selectedTurnRegulator] && typeof propellers[selectedTurnRegulator] === 'object') {
+            addElementToResult(propellers[selectedTurnRegulator], "Пропелер");
+            buf_amount[selectedPropeller] = 4;
+        }
 
-        buf_amount[flight_controllers[selectedFlightController]] = 1;
-        buf_amount[flight_controller_aios[selectedFlightControllerAIO]] = 1;
-        buf_amount[antennas[selectedAntenna]] = 1;
-        buf_amount[motors[selectedMotor]] = 4
-        buf_amount[propellers[selectedPropeller]] = 4;
-
+        setResult({ data: result, totalWeight });
         setAmount(buf_amount);
+
+        console.log("Amount = ", amount);
     }
 
     return (
@@ -1049,9 +1098,9 @@ export const KitsCompare = (props) => {
             </div>
 
             {result && (
-                <div className="result">
-                    <div>
-                        <h2>Вихідні характеристики квадрокоптера</h2>
+                <div className="result" style={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <div style={{ width: '45%', marginRight: '2%', paddingLeft: "10%" }}>
+                        <h2 align="center">Характеристики комплектуючих</h2>
                         {Object.entries(result.data).map(([key, value]) => (
                             <div key={key}>
                                 <h3>{key}</h3>
@@ -1062,16 +1111,25 @@ export const KitsCompare = (props) => {
                                 </ul>
                             </div>
                         ))}
-                        <h3>Сумарна вагавідібраних комплектуючих: {result.totalWeight}</h3>
+                        <h3>Сумарна вага комплектуючих: {result.totalWeight} гр.</h3>
                     </div>
-                    <div>
-                        <h2>Список необхідних комплектуючих</h2>
-                        {Object.entries(amount.data).map(([key, value]) => (
-                            <div key={key}>
-                                <h3>{key}</h3>
-                                <h3>{value}</h3>
+                    <div style={{ width: '45%', marginLeft: '2%', paddingRight: "10%" }}>
+                        <h2 align="center">Список необхідних комплектуючих</h2>
+                        {Object.entries(amount).map(([key, value]) => (
+                            <div key={key} style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                <h3 style={{ fontSize: "20px" }} >{key}</h3>
+                                <p style={{ marginLeft: 'auto' }}>{value} шт.</p>
                             </div>
                         ))}
+
+                    <h2 style={{ marginTop: "20px" }}>Вимоги до батареї: {batteryCapacity}</h2>
+                    <h2 style={{ marginTop: "20px" }}>Вимоги до рами</h2>
+                    <ul>
+                        <li style={{ marginLeft: 'auto', fontSize: "20px" }}>Діаметр мотору: {batteryParameters["Діаметр мотору"]}</li>
+                        <li style={{ marginLeft: 'auto', fontSize: "20px" }}>Розмір отвору вала: {batteryParameters["Розмір отвору вала"]}</li>
+                        <li style={{ marginLeft: 'auto', fontSize: "20px" }}>Діаметр кріпильних отворів: {batteryParameters["Діаметр кріпильних отворів"]}</li>
+                        <li style={{ marginLeft: 'auto', fontSize: "20px" }}>Відстань кріпильних отворів від центру: {batteryParameters["Відстань кріпильних отворів від центру"]}</li>
+                    </ul>
                     </div>
                 </div>
             )}

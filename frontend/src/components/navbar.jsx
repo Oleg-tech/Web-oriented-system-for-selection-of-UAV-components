@@ -1,14 +1,35 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import "./navbar.css";
+import "./logo-animation.css";
 import logo from "./drone_to_edit_logo.png";
 
 export const Navbar = () => {
+    const [isAnimating, setIsAnimating] = useState(true);
+
+    useEffect(() => {
+        const logoElement = document.getElementById("logo");
+        console.log("ANIMATION = ", isAnimating);
+        if (logoElement) {
+            if (isAnimating) {
+                logoElement.classList.add("rotate");
+            } else {
+                logoElement.classList.remove("rotate");
+            }
+        }
+    }, [isAnimating]);
+
     return (
         <div className="navbar" style={{ position: "fixed", top: "0", width: "100%", zIndex: "1000"}}>
             <div className="links">
                 <Link to="/search">
-                    <img src={logo} alt="Home"  style={{ width: '60px', height: 'auto' }}/>
+                    <img
+                        id="logo"
+                        src={logo}
+                        alt="Home"
+                        style={{ width: '60px', height: 'auto' }}
+                        onClick={() => setIsAnimating(!isAnimating)}
+                    />
                 </Link>
                 <Link to="/search">Пошук комплектуючих</Link>
                 <Link to="/categories">Категорії</Link>

@@ -277,7 +277,7 @@ export const Filter = ({
                 step="1"
               />
             </div>
-            <div style={{ marginLeft: "0px", marginTop: "15px", paddingBottom: "0px" }}>
+            <div style={{ marginLeft: "5px", marginTop: "15px", paddingBottom: "0px" }}>
               <button className="w3-button w3-black" onClick={handlePriceRangeChange}>Застосувати</button>
             </div>
           </div>

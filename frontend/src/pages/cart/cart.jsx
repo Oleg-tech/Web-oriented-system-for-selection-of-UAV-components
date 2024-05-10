@@ -48,7 +48,7 @@ export const Cart = () => {
                 <p>Кошик порожній</p>
             ) : (
                 <div>
-                    <div align="center">
+                    <div align="center" style={{ paddingTop: "90px" }}>
                         <button className="w3-button w3-black" onClick={clearCart}>Очистити кошик</button>
 
                         <button onClick={downloadComponents} style={{ border: 'none', background: 'none', marginRight: "50px", marginTop: "25px", marginLeft: "40px" }}>

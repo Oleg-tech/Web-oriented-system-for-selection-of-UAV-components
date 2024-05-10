@@ -8,10 +8,9 @@ import { Pagination } from "./pagination";
 import 'w3-css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
+import "./add-animation.css";
 
 export const fetchComponents = async (category, currentPage, filtered_shops, filtered_countries, filtered_companies, selected_parameters, sorting) => {
-    console.log("Category = ", category);
-
     let url = "http://127.0.0.1:8000/components/api/categories";
 
     if (currentPage) {
@@ -136,6 +135,7 @@ export const Categories = (props) => {
         setSelectedCountries([]);
         setSelectedCompanies([]);
         setSelectedParameters([]);
+        setCurrentPage(1);
     }
 
     const handleCategoryChange = (newCategory) => {
@@ -209,7 +209,7 @@ export const Categories = (props) => {
                         Відеопередавачі
                     </button>
                     <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("VTX")}>
-                        Відеосистеми (VTX)
+                        Відеосистеми
                     </button>
                     <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Receiver")}>
                         Приймачі
@@ -294,7 +294,7 @@ export const Categories = (props) => {
                         Відеопередавачі
                     </button>
                     <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("VTX")}>
-                        Відеосистеми (VTX)
+                        Відеосистеми
                     </button>
                     <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("Receiver")}>
                         Приймачі
@@ -323,16 +323,19 @@ export const Categories = (props) => {
                 </div>
         
                 <div className="product-info" style={{marginLeft: '17%', marginRight: '1%', paddingTop: "90px"}}>
-                    <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingLeft: "20px"}}>
-                        <div className="product-count" style={{
-                            fontSize: '1.5rem',
-                            color: '#333',
-                            fontWeight: 'bold',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1px',
-                            paddingTop: '15px'
-                        }}>
-                            Зачекайте, відбувається пошук комплектуючих...
+                    <div className="products" style={{ 
+                        paddingLeft: "20px",
+                        fontSize: "30px",
+                        lineHeight: "1.5",
+                        fontWeight: "bold",
+                        color: "#333",
+                        position: "relative" }}
+                    >
+                        Зачекайте, відбувається пошук
+                        <div className="loading-dots">
+                            <span className="dot"></span>
+                            <span className="dot"></span>
+                            <span className="dot"></span>
                         </div>
                     </div>
         
@@ -549,7 +552,7 @@ export const Categories = (props) => {
                 ) : null }
 
                 <button className="w3-bar-item w3-button" style={{ fontSize: '18px' }} onClick={() => handleCategoryChange("VTX")}>
-                    Відеосистеми (VTX)
+                    Відеосистеми
                 </button>
 
                 {category === "VTX" ? (
@@ -784,6 +787,15 @@ export const Categories = (props) => {
                         )}
 
                         <ProductList search_result={searchResult}/>
+
+                        {componentsNumber / componentsPerPage > 1 && (
+                            <Pagination
+                                componentsNumber={componentsNumber}
+                                componentsPerPage={componentsPerPage}
+                                currentPage={currentPage}
+                                setCurrentPage={setCurrentPage}
+                            />
+                        )}
                     </div>
                 </div>
     

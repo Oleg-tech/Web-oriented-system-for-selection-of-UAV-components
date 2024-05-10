@@ -3,7 +3,6 @@ import json
 import asyncio
 import concurrent.futures
 
-import unicodedata
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -16,13 +15,13 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .data_parser.get_json_data import find_json_files_list, parse_json
 from .data_parser.asyncio_main_parser import asyncio_main_parser, asyncio_main_parser_for_categories
 from .data_parser.remove_inappropriate import remove_inappropriate_components
-from .models import Component
+from .models import UserMassage
 from .utils import (
     get_user_ip, extract_shops, extract_countries, get_shops_data,
     extract_shop_json, insert_parameters, extract_companies, extract_parameters
 )
 from .services import get_redis_connection
-from .api.pagination import ComponentsResultPagination, CategoryResultPagination
+from .api.pagination import ComponentsResultPagination, CategoryResultPagination, ShopsPagination
 from .api.serializers import ComponentSerializer
 from .api.filters import create_result_components_list, get_min_and_max
 from .get_current_exchange_rate import main_exchange_rate
@@ -300,11 +299,17 @@ class SuperUserLoginView(APIView):
 class AdminComponentFileView(APIView):
     authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
+    # pagination_class = ShopsPagination
 
     def get(self, request, *args, **kwargs):
         if request.user.is_superuser:
             shops = get_shops_data()
-            return Response({"shops": shops})
+
+            return Response(
+                {
+                    "shops": shops
+                }
+            )
         return Response({"detail": "Permission denied"})
 
     def post(self, request, *args, **kwargs):
@@ -348,6 +353,49 @@ class AdminComponentFileView(APIView):
             )
 
         return Response({"shops": 1})
+
+
+class AdminUserMessageView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        if request.user.is_superuser:
+            unchecked_messages = UserMassage.objects.filter(message_is_checked=False)
+
+            user_messages = []
+            for message in unchecked_messages:
+                message_data = {
+                    'id': message.id,
+                    'message_email': message.message_email,
+                    'message_user_ip': message.message_user_ip,
+                    'message_text': message.message_text
+                }
+                user_messages.append(message_data)
+
+            return Response(
+                {
+                    "user_messages": user_messages
+                }
+            )
+        return Response({"detail": "Permission denied"})
+
+    def post(self, request, *args, **kwargs):
+        message_id = request.data.get('message_id')
+
+        print("Message ID = ", message_id)
+
+        if message_id:
+            try:
+                message = UserMassage.objects.get(id=message_id)
+                message.message_is_checked = True
+                message.save()
+
+                return Response({"detail": "Статус повідомлення змінено на перевірено."}, status=status.HTTP_200_OK)
+            except UserMassage.DoesNotExist:
+                return Response({"detail": "Повідомлення з вказаним ID не існує."}, status=status.HTTP_404_NOT_FOUND)
+
+        return Response({"detail": "Message status successfully changed."})
 
 
 category_names = {
@@ -399,7 +447,9 @@ category_must_be = {
     "Propellers": [],
     "Turn regulator": [],
     "Flight controller": [],
-    "Stack": [],
+    "Stack": [
+        "stack", "стек", "aio"
+    ],
     "Battery": [
         "акумулятор ", "аккумулятор ", "battery "
     ],
@@ -413,9 +463,15 @@ category_must_be = {
     "Antenna": [],
     "Control panel": [],
     "Glasses": [],
-    "Quadcopter": [],
-    "Hexacopter": [],
-    "Octocopter": [],
+    "Quadcopter": [
+        "квадрокоптер"
+    ],
+    "Hexacopter": [
+        "гексакоптер"
+    ],
+    "Octocopter": [
+        "октокоптер"
+    ],
     "Wing": []
 }
 
@@ -428,33 +484,77 @@ category_exceptions = {
     "Propellers": [
         "плата", "ключ", "дрон ", "рама ", "квадрокоптер ", "сумка ", "гайки ", "двигун "
     ],
-    "Turn regulator": [],
-    "Flight controller": [],
+    "Turn regulator": [
+        "радіоприймач", "польотний контролер", "конвертор", "захист", "окуляри", "коннектори", "роз'єми",
+        "стек", "резистор", "редуктор", "радіомодуль", "двигун avenger", "серводвигун", "мотор постійного"
+    ],
+    "Flight controller": [
+        "шлейф", "заряд", "оборот", "кришка", "антена", "пульт", "стік", "квадрокоптер", "смарт контролер",
+        "гексакоптер", "камера", "кейс", "stack", "стек", "мультикоптер", "октокоптер", "модуль", "damping",
+        "радіоприймач"
+    ],
     "Stack": [
-        "дисплей", "квадрокоптер", "скло", "рама", "стекл"
+        "дисплей", "квадрокоптер", "скло", "рама", "стекл", "затиск", "карта", "фарба"
     ],
     "Battery": [
         "універсальний", "електросамокат", "корпус ", "зварювання ", "пристрій", "iphone", "sigma",
         "дисплей", "huawei", "ergo", "prestigio", "tecno", "acer", "nomi", "кришка", "квадрокоптер",
-        "пульт", "проектор", "генератор", "окуляри", "стедікам", "станція", "камера", "акумулятора"
+        "пульт", "проектор", "генератор", "окуляри", "стедікам", "станція", "камера", "акумулятора",
+        "xiaomi", "акб", "nokia", "apple", "k&f", "pavilion", "godox", "gold mount", "canon",
+        "nanlite", "np-f", "fuji", "arlo"
     ],
-    "Frame": [],
+    "Frame": [
+        "програматор", "шлейф", "плата", "модуль", "камера", "діорама", "моторама", "рама kh"
+    ],
     "Camera": [
         "шлейф ", "фіксатор ", "корпус", "квадрокоптер ", "обмежувач повороту ",
         "кріплення ", "кришка ", "демпфер ", "захист підвіса ", "поглинач вібрації",
         "realme", "iphone", "телефон", "google pixel", "кабель ", "пульт керування ",
         "Экшн-камера ", "action-камера ", "екшн", "екшен", "фотокамера", "вертоліт",
-        "гексакоптер", "панорамна камера", "фільтри"
+        "гексакоптер", "панорамна камера", "фільтри", "відеокамера", "lens", "відеоспостереження"
     ],
-    "Video transmitter": [],
+    "Video transmitter": [
+        "стедікам", "антена", "радіоприймач"
+    ],
     "VTX": [],
-    "Receiver": [],
-    "Antenna": [],
-    "Control panel": [],
-    "Glasses": [],
-    "Quadcopter": [],
-    "Hexacopter": [],
-    "Octocopter": [],
+    "Receiver": [
+        "квадрокоптер", "окуляри", "пульт", "іч", "інфрачервоний", "лазер", "плата", "набір", "антена для",
+        "монітор", "відеошолом", "відеоприймач", "апаратура", "відеопередавач", "бокс", "кришка", "конвертор",
+        "діверсіті", "скремблер", "fpv дрон", "радіосистема", "комплект", "boya", "польотний контролер"
+    ],
+    "Antenna": [
+        "виносні антени", "квадрокоптер", "пульт керування", "goggles"
+    ],
+    "Control panel": [
+        "квадрокоптер", "шлейф", "кулер", "тримач", "вал", "корпус", "кабель", "акумулятор", "комплекс", "проектор",
+        "гексакоптер", "стедікам", "октокоптер", "камера", "сумка", "одноканальним", "драйвер", "іч", "стек",
+        "сервопривод", "модуль", "клавіатура", "плата", "ремінець", "fpv система", "радіоприймач", "відеоприймач",
+        "діверсіті", "відеопередавач", "запобіжник", "старотовий набір", "старотовый набір", "autel evo max 4t protect+",
+        "кожух", "одноканальным", "одноканальний", "кріплення", "перехідник", "окуляри", "рама", "польотний контролер"
+    ],
+    "Glasses": [
+        "3d-окуляри", "бінокуляри", "захисні окуляри", "квадрокоптер", "xreal air", "діверсіті", "мішечок", "ремінець",
+        "захист для", "рюкзак", "радіомодуль", "радіоприймач"
+    ],
+    "Quadcopter": [
+        "кейс", "акумулятор", "рама", "майданчик", "рюкзак", "підсилювач", "шлейф", "плата", "кулер", "фільтр", "корпус",
+        "камер", "кабель", "частин", "мотор", "двигун", "кріплення", "кришка", "пульт", "пропелер", "аккумулятор", "модуль",
+        "сенсор", "подушки"
+    ],
+    "Hexacopter": [
+        "кейс", "акумулятор", "рама", "майданчик", "рюкзак", "підсилювач", "шлейф", "плата", "кулер", "фільтр",
+        "корпус",
+        "камер", "кабель", "частин", "мотор", "двигун", "кріплення", "кришка", "пульт", "пропелер", "аккумулятор",
+        "модуль",
+        "сенсор", "подушки"
+    ],
+    "Octocopter": [
+        "кейс", "акумулятор", "рама", "майданчик", "рюкзак", "підсилювач", "шлейф", "плата", "кулер", "фільтр",
+        "корпус",
+        "камер", "кабель", "частин", "мотор", "двигун", "кріплення", "кришка", "пульт", "пропелер", "аккумулятор",
+        "модуль",
+        "сенсор", "подушки"
+    ],
     "Wing": []
 }
 
@@ -633,3 +733,24 @@ def discard_wrong_by_needed_word(components, category):
                 break
 
     return filtered_components
+
+
+class SaveUserMessageView(APIView):
+    def post(self, request, *args, **kwargs):
+        message_email = request.data.get('user_email')
+        message_text = request.data.get('user_message')
+
+        print("Email = ", message_email)
+        print("Message = ", message_text)
+
+        if message_email and message_text:
+            new_message = UserMassage(
+                message_email=message_email,
+                message_text=message_text
+            )
+
+            new_message.save()
+
+            return Response({"detail": "Повідомлення успішно збережено та буде розглянуто найближчим часом."})
+
+        return Response({"detail": "При збереженні повідомлення сталася помилка. Спробуйте ще раз пізніше."})

@@ -15,7 +15,7 @@ const formatPrice = (price) => {
     return `${price.toLocaleString('uk-UA', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₴`;
 };
 
-export const Product = ({data, index, setInstruction}) => {
+export const Product = ({data, index, setInstruction, downloadKit}) => {
     const { componentDescription, componentImageURL } = data;
 
     console.log("NeIndex = ", index);
@@ -33,7 +33,7 @@ export const Product = ({data, index, setInstruction}) => {
                                 background: 'none',
                                 cursor: 'pointer'
                             }}
-                            // onClick={setInstruction()}
+                            onClick={() => downloadKit(index)}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" style={{ marginRight: "20px" }} width="20px" height="20px" fill="currentColor" className="bi bi-download" viewBox="0 0 16 16">
                                 <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>

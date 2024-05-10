@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Shop, Currency, Component
+from .models import Shop, Currency, Component, UserMassage
 
 
 class ShopAdmin(admin.ModelAdmin):
@@ -24,6 +24,14 @@ class ComponentAdmin(admin.ModelAdmin):
     list_display_links = ['component_name']
 
 
+class UserMessageAdmin(admin.ModelAdmin):
+    list_display = [
+        'id', 'message_email', 'message_user_ip', 'message_text', 'message_is_checked'
+    ]
+    list_display_links = ['message_email']
+
+
 admin.site.register(Shop, ShopAdmin)
 admin.site.register(Currency, CurrencyAdmin)
 admin.site.register(Component, ComponentAdmin)
+admin.site.register(UserMassage, UserMessageAdmin)

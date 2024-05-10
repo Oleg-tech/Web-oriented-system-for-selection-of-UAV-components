@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
+import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { PrivateRoute } from './privateComp';
 
@@ -186,9 +187,17 @@ export const Admin = () => {
         ) : (
           <div>
 
-          <div align="center" style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
-            <button className="btn btn-success">Додати</button>
-            <input type="file" style={{ position: 'absolute', top: 0, right: 0, minWidth: '100%', minHeight: '100%', fontSize: '100px', textAlign: 'right', opacity: 0, outline: 'none', cursor: 'inherit' }} onChange={handleFileChange} />
+          <div  className="row">
+            <div className="col-md-6" style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
+              <button className="btn btn-success">Додати</button>
+              <input type="file" style={{ position: 'absolute', top: 0, right: 0, minWidth: '100%', minHeight: '100%', fontSize: '100px', textAlign: 'right', opacity: 0, outline: 'none', cursor: 'inherit' }} onChange={handleFileChange} />
+            </div>
+
+            <div className="col-md-6 d-flex justify-content-end align-items-center" style={{ paddingTop: "0px", paddingRight: "50px" }}>
+              <Link to="/admin/check_messages" className="btn btn-primary">
+                Повідомлення від користувачів
+              </Link>
+            </div>
           </div>
 
           <table className="table">

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import * as XLSX from 'xlsx';
 import { Product } from './product';
 import { ProductShop } from './productShop';
 
@@ -7,31 +8,203 @@ import 'w3-css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 
+const allData1 = [
+    {
+        "componentName": "Каркас: Mark4",
+        "componentAmount": 1,
+        "componentPrice": "699.0",
+        "componentURL": "https://top-best.ua/uk/rama-kvadrokoptera-anomaly-mark-4-7-295mm-fpv-carbon-frame-black-chornyy.html?gad_source=1&gclid=EAIaIQobChMIzL6vsr72hQMV3GiRBR3dbQ1xEAQYAiABEgKpwvD_BwE"
+    },
+    {
+        "componentName": "Політний стек: SpeedyBee F405 V3 Stack BLS 50A",
+        "componentAmount": 1,
+        "componentURL": "https://t-port.com.ua/ua/p2076653372-polyotnyj-stek-speedybee.html",
+        "componentPrice": "2750.0"
+    },
+    {
+        "componentName": "Мотори (4 шт.): EMAX ECOII Series ECO II 2807 6S 1300KV",
+        "componentAmount": 4,
+        "componentURL": "https://leti.com.ua/ru/electronics/motors/uangel-x2807-1300kv-4s-6s-brushless-motor-for-mark4-fpv/",
+        "componentPrice": "3608.0"
+    },
+    {
+        "componentName": "Пропелери: HQPROP 7040 7X4X3 (4 шт.)",
+        "componentAmount": 4,
+        "componentURL": "https://modelistam.com.ua/propellery-hqprop-7x4x3-polikarbonat-p-47600/?gad_source=1&gclid=EAIaIQobChMI19HY0L_2hQMVlz4GAB1nygbdEAQYASABEgL2wvD_BwE",
+        "componentPrice": "170.0"
+    },
+    {
+        "componentName": "Камера: Caddx Ant",
+        "componentAmount": 1,
+        "componentURL": "https://drono.store/fpv-kameras/494-1272-kamera-dlya-fpv-dronrejsingu-caddx-ant.html#/48-kolir-black/151-format_zobrazhennya-16_9",
+        "componentPrice": "599.60"
+    },
+    {
+        "componentName": "Відеопередавач (VTX): AKK Race Ranger 1.6W",
+        "componentAmount": 1,
+        "componentURL": "https://www.itbox.ua/ua/product/Zapchastina_dlya_drona_AKK_Race_Ranger_VTX_TX1918LX-p979482/?utm_content=new_buyers&gad_source=1&gclid=EAIaIQobChMIg4S9n8D2hQMV6DEGAB0Ncg25EAQYASABEgK5W_D_BwE",
+        "componentPrice": "792.0"
+    },
+    {
+        "componentName": "Антена: Lollipop 4 V4 (SMA 10CM)",
+        "componentAmount": 1,
+        "componentURL": "https://prom.ua/ua/p2015004750-antenna-dlya-fpv.html?token=v2%3AVpBI5-W9b7lWNO15YWSTDY3ZXQ6EHprzw9I-mtuNslf76i32GqMoA9QJCs5eVhxKg26cODdyg47GiVqTbLDPlUSawjBCxKOAtdKBMHNIcAwhDhXYuezkS5LzCaTcsWGg&campaign_id=3615887&product_id=2015004750&source=prom%3Asearch%3Aserp&locale=uk&category_ids=500415&from_spa=true",
+        "componentPrice": "359.0"
+    },
+    {
+        "componentName": "Приймач: Readytosky ELRS 915MHz",
+        "componentAmount": 1,
+        "componentURL": "https://www.itbox.ua/ua/product/Zapchastina_dlya_drona_HappyModel_Happymodel_ExpressLRS_ELRS_ES900RX_06g_Receiver_868MHZ-ES900RX-p938192/?utm_content=new_buyers&gad_source=1&gclid=EAIaIQobChMIyOC6ysD2hQMV_KdoCR2ncA4mEAQYASABEgLeFfD_BwE",
+        "componentPrice": "528.0"
+    }
+]
+
+const allData2 = [
+    {
+        "componentName": "Каркас: Mark4",
+        "componentAmount": 1,
+        "componentPrice": "699.0",
+        "componentURL": "https://top-best.ua/uk/rama-kvadrokoptera-anomaly-mark-4-7-295mm-fpv-carbon-frame-black-chornyy.html?gad_source=1&gclid=EAIaIQobChMIzL6vsr72hQMV3GiRBR3dbQ1xEAQYAiABEgKpwvD_BwE"
+    },
+    {
+        "componentName": "Політний стек: SpeedyBee F405 V3 Stack BLS 50A",
+        "componentAmount": 1,
+        "componentURL": "https://t-port.com.ua/ua/p2076653372-polyotnyj-stek-speedybee.html",
+        "componentPrice": "2750.0"
+    },
+    {
+        "componentName": "Мотори (4 шт.): EMAX ECOII Series ECO II 2807 6S 1300KV",
+        "componentAmount": 4,
+        "componentURL": "https://leti.com.ua/ru/electronics/motors/uangel-x2807-1300kv-4s-6s-brushless-motor-for-mark4-fpv/",
+        "componentPrice": "3608.0"
+    },
+    {
+        "componentName": "Пропелери: HQPROP 7040 7X4X3 (4 шт.)",
+        "componentAmount": 4,
+        "componentURL": "https://modelistam.com.ua/propellery-hqprop-7x4x3-polikarbonat-p-47600/?gad_source=1&gclid=EAIaIQobChMI19HY0L_2hQMVlz4GAB1nygbdEAQYASABEgL2wvD_BwE",
+        "componentPrice": "170.0"
+    },
+    {
+        "componentName": "Камера: Caddx Ratel 2 V2",
+        "componentAmount": 1,
+        "componentURL": "https://prom.ua/ua/p2117280955-fpv-kamera-caddx.html?token=v2%3Af36SBZEF0f0M3PgCEdQwuF3iZfS7lU3qkN0Yb5TWV2xKEnJfzM1TLgzrayXGc2dWAGRrpHBnMSKCnyIpFMPqiCYpRIjD3C7JFdcjOkhRCwQdz_hRuVD_HQ5n5VQ9V-Rg&campaign_id=3887821&product_id=2117280955&source=prom%3Asearch%3Aserp&locale=uk&category_ids=500415&from_spa=true",
+        "componentPrice": "1040.0"
+    },
+    {
+        "componentName": "Відеопередавач (VTX): JHEMCU 2.5W VTX 5.8G",
+        "componentAmount": 1,
+        "componentURL": "https://drone-azimyth.com.ua/index.php?route=product/product&product_id=959&gad_source=1&gclid=EAIaIQobChMIl4O27cf2hQMVdgCiAx2k-gvEEAQYASABEgJ3KfD_BwE",
+        "componentPrice": "2200.0"
+    },
+    {
+        "componentName": "Антена: RUSHFPV Cherry Long SMA 5.8G RHCP 160mm",
+        "componentAmount": 1,
+        "componentURL": "https://prom.ua/ua/p2114675426-antena-dlya-fpv.html?token=v2%3AQluFskRBYSZ9k41f7-KuYu4x5N3almnkW2Xd1ZQBvn6RfgPHaKLR9Zw6mdcpZSl8srcjWSivm_2i6ON5XISK2AQM_sKzaK1Z8MHWTyltaNe2wEUzOvaVZkcbeS0J-Jgq&campaign_id=3854154&product_id=2114675426&source=prom%3Asearch%3Aserp&locale=uk&category_ids=500415&from_spa=true",
+        "componentPrice": "312.0"
+    },
+    {
+        "componentName": "Приймач: TBS Crossfire Nano RX (SE)",
+        "componentAmount": 1,
+        "componentURL": "https://www.itbox.ua/ua/product/Zapchastina_dlya_drona_TBS_Crossfire_Nano_SE_RX_with_T_antenna_HP167-0004-p954590/?utm_content=new_buyers&gad_source=1&gclid=EAIaIQobChMIpurliMn2hQMV1EpBAh17XQ8eEAQYASABEgIEBPD_BwE",
+        "componentPrice": "1190.0"
+    },
+    {
+        "componentName": "Буззер: Буззер Tarot для пошуку моделі",
+        "componentAmount": 1,
+        "componentURL": "https://modelistam.com.ua/ua/buzzer-tarot-dlya-poiska-modeli-tl3005-p-34936/",
+        "componentPrice": "280.0"
+    },
+    {
+        "componentName": "GPS: Beitian BE-220 GPS",
+        "componentAmount": 1,
+        "componentURL": "https://top-best.ua/modul-dlya-kvadrokopterov-beitian-be-220-gps-white-belyy.html?gad_source=1&gclid=EAIaIQobChMI0InE5sn2hQMVzVGRBR3nwwSBEAQYASABEgKgV_D_BwE",
+        "componentPrice": "559.0"
+    }
+]
+
+const allData3 = [
+    {
+        "componentName": "Квадрокоптер: FPV CHG 7",
+        "componentAmount": 1,
+        "componentPrice": "16125.0",
+        "componentURL": "https://rozetka.com.ua/ua/chg-seakd5pro/p422499858/"
+    },
+    {
+        "componentName": "Пульт керування: Commando 8 ELRS 868/915MHz",
+        "componentAmount": 1,
+        "componentURL": "https://r202x.com/ru/pult-commando-8-elrs-868-915mhz-1w-1000mw-iflight-aparatura-dlia-drona-fpv-kvadrokoptera/",
+        "componentPrice": "6777.0"
+    },
+    {
+        "componentName": "Окуляри: iFlight Analog FPV Goggles, 5.8Ггц",
+        "componentAmount": 1,
+        "componentURL": "https://dron-shop.com.ua/fpv/fpv_googles/iflight-analog-fpv-goggles",
+        "componentPrice": "3695.0"
+    }
+]
+
+const downloadKit = async (index) => {
+    console.log("INDEX = ", index);
+    const headers = ["Назва комплектуючої", "Необхідна кількість", "Ціна, грн.", "Посилання на товар в магазині"];
+    let data = [];
+
+    if (index == 0) {
+        data = [headers, ...allData1.map(item => [
+            item.componentName,
+            item.componentAmount,
+            item.componentPrice,
+            item.componentURL
+        ])];
+    }
+    else if (index == 1) {
+        data = [headers, ...allData2.map(item => [
+            item.componentName,
+            item.componentAmount,
+            item.componentPrice,
+            item.componentURL
+        ])];
+    }
+    else if (index == 2) {
+        data = [headers, ...allData3.map(item => [
+            item.componentName,
+            item.componentAmount,
+            item.componentPrice,
+            item.componentURL
+        ])];
+    }
+    else return;
+
+    try {
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        XLSX.utils.book_append_sheet(wb, ws, 'Components');
+        XLSX.writeFile(wb, "kit-components.xlsx");
+    } catch (err) {
+        console.error('Error:', err);
+    }
+};
 
 const ComponentList = () => {
     return (
         <div className="component-list" style={{ width:"80%", paddingLeft: "120px" }}>
-            <h3><a href="https://youtu.be/75SbiwqW7DM?si=3QH5_ZYiWzLsHX2-">Посилання на відеоінструкцію зі збірки</a></h3>
-            <h3><a href="https://youtu.be/NlzVfn5iKSE?si=h6mNHYuAVqZKObLP">Посилання на відеоінструкцію для налаштування</a></h3>
+            <h3><a href="https://youtu.be/75SbiwqW7DM?si=3QH5_ZYiWzLsHX2-" target="_blank">Посилання на відеоінструкцію зі збірки</a></h3>
+            <h3><a href="https://youtu.be/NlzVfn5iKSE?si=h6mNHYuAVqZKObLP" target="_blank">Посилання на відеоінструкцію для налаштування</a></h3>
 
             <h3>Необхідні деталі та кріплення</h3>
             <ul>
-                <li>Ремінець для кріплення батареї. Для більшості Li-ion добре підійде 30см</li>
+                <li>Ремінець для кріплення батареї (для більшості Li-ion добре підійде 30см)</li>
                 <li>5pcs iFlight 20x300mm FPV Belt Iron buckle</li>
-                <li>YSIDO Tape Nylon Lipo Strap Belt є різні розміри</li>
-                <li>Для кріплення VTX як на відео потрібно 4 гвинтики М3х12 і для них 4 гайки М3. Або відеопередавач можна стяжками прикріпити.</li>
+                <li>YSIDO Tape Nylon Lipo Strap Belt (є різні розміри)</li>
+                <li>Для кріплення VTX, потрібно 4 гвинтики М3х12 і для них 4 гайки М3. Також відеопередавач можна прикріпити стяжками.</li>
                 <li>Демферні гумки для польотника чи регулятора</li>
                 <li>Силіконові шайби для регулювання висоти стеку</li>
-                <li>Запасні гайки для пропів Обирайте М5</li>
+                <li>Запасні гайки для пропелерів (М5)</li>
                 <li>Гайки для пропелерів від EMAX</li>
-                <li>Маленькі гвинтики (сталеві)</li>
-                <li>Пластикові гвинти</li>
-                <li>Сталеві гайки</li>
-                <li>Пластикові гвинти</li>
-                <li>Пластикові гайки</li>
-                <li>Пластикові проставки М3 (в збірці я не використовував але деякі VTX зручно кріпити через проставки)</li>
+                <li>Сталеві та пластикові гвинти</li>
+                <li>Сталеві та пластикові гайки</li>
+                <li>Пластикові проставки М3</li>
                 <li>Пластикові шайби різних розмірів</li>
-                <li>Захисна оплітка (6мм) можна обійтись без неї</li>
+                <li>Захисна оплітка (6мм) (не обво'зково)</li>
             </ul>
             <h3>Необхідні інструменти</h3>
             <ul>
@@ -50,7 +223,7 @@ const ComponentList = () => {
 const ComponentList3 = () => {
     return (
         <div className="component-list" style={{ width:"80%", paddingLeft: "120px" }}>
-            <h3><a href="https://youtu.be/NlzVfn5iKSE?si=h6mNHYuAVqZKObLP">Посилання на відеоінструкцію для налаштування</a></h3>
+            <h3><a href="https://youtu.be/NlzVfn5iKSE?si=h6mNHYuAVqZKObLP" target="_blank">Посилання на відеоінструкцію для налаштування</a></h3>
 
             <h3>Опис</h3>
             <ul>
@@ -259,7 +432,7 @@ const ProductList = ({search_result, setInstruction}) => {
             {Array.isArray(search_result) && search_result.length > 0 ? (
                 search_result.map(
                     (product, index) => (
-                        <Product key={product.id} data={product} index={index} setInstruction={setInstruction} />
+                        <Product key={product.id} data={product} index={index} setInstruction={setInstruction} downloadKit={downloadKit} />
                     )
                 )
             ) : (
@@ -296,7 +469,6 @@ export const Kits = (props) => {
             setInstruction(null);
             return;
         }
-
 
         setCurrentIndex(index);
         if (index === 0) {

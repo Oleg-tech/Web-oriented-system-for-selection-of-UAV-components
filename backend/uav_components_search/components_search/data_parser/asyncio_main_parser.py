@@ -367,7 +367,8 @@ category_requests_by_shop = {
         "Antenna": "антена для дрона",
         "Control panel": "пульт керування дрона",
         "Googles": "окуляри для дрона",
-        "Wing": "дрон оперативного"
+        "Wing": "дрон оперативного",
+        "Octocopter": "EXCEPT"
     },
     './components_search/data_parser/component_source_data\\pyn_source_data.json': {
         "Turn regulator": "регулятор ходу"
